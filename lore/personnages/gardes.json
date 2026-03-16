@@ -1,0 +1,16 @@
+{
+  "entries": [
+    {
+      "name": "Capitaine Aldric",
+      "category": "npc_present",
+      "keys": ["aldric", "capitaine", "chef des gardes"],
+      "secondary_keys": ["garde", "capitaine de la garde"],
+      "content": "Le Capitaine Aldric est un homme de 45 ans, balafre et discipline. Il commande la garde de la ville de Valcrest. Il est loyal envers le roi mais suspecte la corruption au sein de la cour. Il parle peu mais observe tout.",
+      "priority": 600,
+      "order": 10,
+      "trigger_chance": 100,
+      "scan_depth": 20,
+      "enabled": true
+    }
+  ]
+}

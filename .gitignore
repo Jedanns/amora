@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Project data
+data/sessions/
+data/saves/
+data/logs/
+data/cache/
+*.db
+*.db-journal
+
+# Models (too large for git)
+modeles/
+models/
+*.gguf
+koboldcpp.exe
+
+# Secrets
+.env
+.env.local
+credentials.json
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# mypy
+.mypy_cache/
+
+# ruff
+.ruff_cache/
+
+# pytest
+.pytest_cache/
+
+# property-based testing
+.hypothesis/
+
+# SQLite sidecar files
+*.db-shm
+*.db-wal
+
+# frontend
+frontend/node_modules/

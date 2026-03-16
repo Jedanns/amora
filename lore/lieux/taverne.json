@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "name": "La Taverne du Dragon Ivre",
+      "category": "location_active",
+      "keys": ["taverne", "dragon ivre", "auberge"],
+      "secondary_keys": ["boire", "biere", "repas"],
+      "regex_keys": ["tavern[e]?"],
+      "content": "La Taverne du Dragon Ivre est le point de rencontre des aventuriers a Valcrest. Le patron, un ancien nain guerrier nomme Brok, sert les meilleures bieres de la region. L'ambiance est chaleureuse mais peut devenir agitee les soirs de pleine lune. On y trouve un tableau d'affichage avec des quetes disponibles.",
+      "priority": 700,
+      "order": 10,
+      "trigger_chance": 100,
+      "scan_depth": 15,
+      "enabled": true
+    }
+  ]
+}

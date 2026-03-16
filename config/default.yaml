@@ -1,0 +1,87 @@
+app:
+  name: "mon-rpg-ia"
+  version: "0.1.0"
+  debug: false
+
+llm:
+  provider: "koboldcpp"
+  url: "http://localhost:5001"
+  model: "Qwen_Qwen3-8B-Q4_K_M.gguf"
+
+  n_gpu_layers: 32
+  n_cpu_moe: 16
+  flash_attention: true
+  kv_cache_quant: "q4_1"
+
+  max_context_tokens: 16384
+  max_response_tokens: 1024
+
+  temperature: 0.7
+  top_p: 0.9
+  top_k: 40
+
+  retry:
+    max_attempts: 3
+    delay_seconds: [1, 2, 5]
+
+lore:
+  directory: "./lore"
+  cache_embeddings: true
+  embedding_model: "all-MiniLM-L6-v2"
+
+memory:
+  max_context_tokens: 12288
+  summary_threshold: 50
+  summary_every: 30
+  summary_max_tokens: 500
+  summary_model: null
+  max_key_facts: 50
+  embedding_cache_ttl: 3600
+  embedding_cache_maxsize: 1000
+
+game:
+  dice:
+    seed: null
+    log_rolls: true
+
+  inventory:
+    max_slots: 100
+    max_weight: 100.0
+
+  character:
+    max_level: 20
+    hp_per_level: 10
+    mana_per_level: 5
+
+  combat:
+    max_rounds: 50
+    actions_per_turn: 1
+    base_damage_dice: "1d6"
+    spell_damage_dice: "1d8"
+    critical_multiplier: 2.0
+    minimum_damage: 1
+    flee_dc: 12
+
+persistence:
+  database: "data/game.db"
+  saves_directory: "data/saves"
+  logs_directory: "data/logs"
+  backup:
+    enabled: true
+    interval_hours: 6
+    max_backups: 10
+
+logging:
+  level: "INFO"
+  format: "json"
+  file: "data/logs/app.log"
+  rotation:
+    max_size_mb: 100
+    backup_count: 5
+
+api:
+  host: "127.0.0.1"
+  port: 8000
+  cors_origins: ["http://localhost:8000"]
+  rate_limit:
+    requests_per_minute: 60
