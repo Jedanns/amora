@@ -12,7 +12,6 @@ import { learnKeywords } from '@/components/chat/NarrativeHighlighter.tsx';
 import { api } from '@/services/api.ts';
 import type { Character, SkillCategory } from '@/types/character.ts';
 import { DEFAULT_SKILL_CATEGORIES, CLASS_LABELS } from '@/types/character.ts';
-import type { Quest, Rumor } from '@/types/quest.ts';
 import type { NpcRelationship } from '@/types/npc.ts';
 import type { Item, EquipmentSlots } from '@/types/inventory.ts';
 
@@ -39,14 +38,14 @@ const TABS = [
   { id: 'relations', number: 4, icon: '\u2764\uFE0F' },
 ];
 
-const MOCK_QUESTS: Quest[] = [
+const MOCK_QUESTS = [
   {
     id: 'q1',
     name: 'Get Your Bearings',
     description: "Explore the area and learn about your surroundings. Talk to the locals and find out what's happening.",
     level: 1,
     xp_reward: 10,
-    status: 'active',
+    status: 'active' as const,
     reward_text: 'A helping hand in finding your first quest',
     bookmarked: true,
     notes: [
@@ -56,7 +55,7 @@ const MOCK_QUESTS: Quest[] = [
   },
 ];
 
-const MOCK_RUMORS: Rumor[] = [
+const MOCK_RUMORS = [
   {
     id: 'r1',
     name: "The Temple's Long Memory",
@@ -100,18 +99,11 @@ export default function GameScreen({ sessionId, characterId, initialCharacter, o
   const [isConnected, setIsConnected] = useState(false);
   const [modelName, setModelName] = useState<string | undefined>();
   const [location, setLocation] = useState('Crosshaven');
-  const [timeOfDay, setTimeOfDay] = useState('Morning');
+  const [timeOfDay] = useState('Morning');
   const [skillCategories] = useState<SkillCategory[]>(DEFAULT_SKILL_CATEGORIES);
   const [quests] = useState(MOCK_QUESTS);
   const [rumors] = useState(MOCK_RUMORS);
   const [relationships] = useState(MOCK_RELATIONSHIPS);
-  const [keywords] = useState({
-    playerName: initialCharacter.name,
-    npcNames: ['Brok', 'Grim', 'Greg', 'Aldric'],
-    locations: ['Taverne', 'Dragon Ivre', 'Crosshaven', 'Valcrest'],
-    items: [] as string[],
-    factions: ['Mercenaires de la Main de Fer'],
-  });
 
   const [inventory] = useState({
     crowns: 25,
@@ -186,7 +178,7 @@ export default function GameScreen({ sessionId, characterId, initialCharacter, o
 
   useEffect(() => {
     const introPrompt = `Je suis ${initialCharacter.name}, un(e) ${CLASS_LABELS[initialCharacter.character_class]}. Je viens d'arriver dans une taverne. Decris la scene et presente-moi l'endroit.`;
-    handleSendMessage(introPrompt, true);
+    sendToApi(introPrompt, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -202,14 +194,14 @@ export default function GameScreen({ sessionId, characterId, initialCharacter, o
     }]);
   }, [location, timeOfDay]);
 
-  const handleSendMessage = useCallback(async (text: string, isIntro = false) => {
+  const sendToApi = useCallback(async (text: string, isIntro = false) => {
     if (!isIntro) {
       addMessage('user', text);
     }
     setIsGenerating(true);
     try {
       const resp = await api.game.sendInput(sessionId, text);
-      learnKeywords(resp.narrative, keywords);
+      learnKeywords(resp.narrative);
       addMessage('assistant', resp.narrative);
 
       if (resp.state) {
@@ -224,7 +216,11 @@ export default function GameScreen({ sessionId, characterId, initialCharacter, o
       addMessage('system', `Erreur: ${err instanceof Error ? err.message : 'Erreur inconnue'}`);
     }
     setIsGenerating(false);
-  }, [sessionId, characterId, addMessage, keywords]);
+  }, [sessionId, characterId, addMessage]);
+
+  const handleSendMessage = useCallback((text: string) => {
+    sendToApi(text, false);
+  }, [sendToApi]);
 
   const handleSave = useCallback(async () => {
     try {
@@ -291,7 +287,6 @@ export default function GameScreen({ sessionId, characterId, initialCharacter, o
           isGenerating={isGenerating}
           onSendMessage={handleSendMessage}
           playerName={initialCharacter.name}
-          keywords={keywords}
         />
       }
       rightPanel={
