@@ -51,7 +51,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdDQ0E3RDEzMDIzRTQ5MzkKUldRNVNUNENFMzNLZkJKOEtMdnc5V1BOMklTMWlpQmFRMzdQdEJESEdObnZTckJWQklZMkcrVmoK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMxQzkxNkJEMjJCMUQ4MkEKUldRcTJMRWl2UmJKd2VBSEF0TTFVd2VicEhTQXdQMjVBSXBCUzJoZ1ZnOVo0cWZUaEJjckRYQmoK",
       "endpoints": [
         "https://github.com/Jedanns/amora/releases/latest/download/latest.json"
       ],
