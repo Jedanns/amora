@@ -1,4 +1,5 @@
-import type { CSSProperties } from 'react';
+import type { ComponentType } from 'react';
+import { Sword, Swords, Heart, Brain, Eye, Sparkles } from 'lucide-react';
 import type { CharacterAttributes } from '../../types';
 
 interface RadarChartProps {
@@ -10,14 +11,14 @@ interface RadarChartProps {
 const ATTRIBUTE_CONFIG: Array<{
   key: keyof CharacterAttributes;
   label: string;
-  icon: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
 }> = [
-  { key: 'strength', label: 'FOR', icon: '\u2694' },
-  { key: 'dexterity', label: 'DEX', icon: '\u{1F5E1}' },
-  { key: 'constitution', label: 'CON', icon: '\u2764' },
-  { key: 'intelligence', label: 'INT', icon: '\u{1F9E0}' },
-  { key: 'wisdom', label: 'SAG', icon: '\u{1F441}' },
-  { key: 'charisma', label: 'CHA', icon: '\u2728' },
+  { key: 'strength', label: 'FOR', icon: Sword },
+  { key: 'dexterity', label: 'DEX', icon: Swords },
+  { key: 'constitution', label: 'CON', icon: Heart },
+  { key: 'intelligence', label: 'INT', icon: Brain },
+  { key: 'wisdom', label: 'SAG', icon: Eye },
+  { key: 'charisma', label: 'CHA', icon: Sparkles },
 ];
 
 function hexagonPoints(cx: number, cy: number, radius: number): string {
@@ -61,20 +62,13 @@ function RadarChart({
 
   const dataPolygon = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
 
-  const containerStyle: CSSProperties = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '4px 0',
-  };
-
   return (
-    <div style={containerStyle}>
+    <div className="flex justify-center items-center py-1">
       <svg
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        style={{ overflow: 'visible' }}
+        className="overflow-visible"
       >
         {gridLevels.map(level => (
           <polygon
@@ -124,6 +118,8 @@ function RadarChart({
 
         {ATTRIBUTE_CONFIG.map((attr, i) => {
           const iconPos = vertexPosition(cx, cy, iconRadius, i);
+          const Icon = attr.icon;
+          const iconSize = 20;
           return (
             <g key={`icon-${i}`}>
               <circle
@@ -134,16 +130,16 @@ function RadarChart({
                 stroke="#2a2a3a"
                 strokeWidth={1}
               />
-              <text
-                x={iconPos.x}
-                y={iconPos.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fontSize={10}
-                style={{ userSelect: 'none' }}
+              <foreignObject
+                x={iconPos.x - iconSize / 2}
+                y={iconPos.y - iconSize / 2}
+                width={iconSize}
+                height={iconSize}
               >
-                {attr.icon}
-              </text>
+                <div className="flex items-center justify-center w-full h-full">
+                  <Icon size={10} className="text-gold" />
+                </div>
+              </foreignObject>
             </g>
           );
         })}

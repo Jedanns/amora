@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class GameState:
     session_id: str
+    name: str = "New Session"
     turn: int = 0
     active_character_id: str | None = None
     location: str = "spawn"
@@ -38,6 +39,7 @@ class GameState:
     def copy(self) -> GameState:
         return GameState(
             session_id=self.session_id,
+            name=self.name,
             turn=self.turn,
             active_character_id=self.active_character_id,
             location=self.location,
@@ -50,6 +52,7 @@ class GameState:
     def to_dict(self) -> dict[str, Any]:
         return {
             "session_id": self.session_id,
+            "name": self.name,
             "turn": self.turn,
             "active_character_id": self.active_character_id,
             "location": self.location,
@@ -68,6 +71,7 @@ class GameState:
             ts = datetime.now(UTC)
         return cls(
             session_id=data["session_id"],
+            name=data.get("name", data["session_id"]),
             turn=data.get("turn", 0),
             active_character_id=data.get("active_character_id"),
             location=data.get("location", "spawn"),
@@ -159,7 +163,7 @@ class GameEngine:
         self, name: str = "New Session", world_id: str = "default"
     ) -> GameState:
         session_id = f"sess_{uuid4().hex[:8]}"
-        self._state = GameState(session_id=session_id, location="spawn")
+        self._state = GameState(session_id=session_id, name=name, location="spawn")
         self._state_history.clear()
         self._history.clear()
 
@@ -189,7 +193,7 @@ class GameEngine:
             "history": [h.to_dict() for h in self._history[-100:]],
         }
 
-        await self._db.save_session(state.session_id, state.session_id, session_data)
+        await self._db.save_session(state.session_id, state.name, session_data)
         state.version += 1
         await self._db.save_game_state(state.session_id, state.to_dict(), state.version)
 

@@ -2,9 +2,15 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-import numpy as np
+try:
+    import numpy as np
+
+    _numpy_available = True
+except ImportError:
+    np = None  # type: ignore[assignment]
+    _numpy_available = False
 
 if TYPE_CHECKING:
     from sentence_transformers import SentenceTransformer
@@ -14,7 +20,14 @@ logger = logging.getLogger(__name__)
 _model_cache: dict[str, SentenceTransformer] = {}
 
 
+def _require_numpy() -> None:
+    if not _numpy_available:
+        msg = "numpy is required for embeddings but is not installed"
+        raise ImportError(msg)
+
+
 def get_embedding_model(model_name: str = "all-MiniLM-L6-v2") -> SentenceTransformer:
+    _require_numpy()
     if model_name not in _model_cache:
         from sentence_transformers import SentenceTransformer
 
@@ -26,21 +39,24 @@ def get_embedding_model(model_name: str = "all-MiniLM-L6-v2") -> SentenceTransfo
 def encode_text(
     text: str,
     model_name: str = "all-MiniLM-L6-v2",
-) -> np.ndarray:
+) -> Any:
+    _require_numpy()
     model = get_embedding_model(model_name)
-    return model.encode(text, show_progress_bar=False)  # type: ignore[return-value]
+    return model.encode(text, show_progress_bar=False)
 
 
 def encode_batch(
     texts: list[str],
     model_name: str = "all-MiniLM-L6-v2",
     batch_size: int = 32,
-) -> np.ndarray:
+) -> Any:
+    _require_numpy()
     model = get_embedding_model(model_name)
-    return model.encode(texts, batch_size=batch_size, show_progress_bar=False)  # type: ignore[return-value]
+    return model.encode(texts, batch_size=batch_size, show_progress_bar=False)
 
 
-def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+def cosine_similarity(a: Any, b: Any) -> float:
+    _require_numpy()
     norm_a = np.linalg.norm(a)
     norm_b = np.linalg.norm(b)
     if norm_a == 0 or norm_b == 0:
@@ -58,13 +74,14 @@ class CachedEmbeddings:
         self._model_name = model_name
         self._maxsize = maxsize
         self._ttl = ttl
-        self._cache: dict[int, tuple[np.ndarray, float]] = {}
+        self._cache: dict[int, tuple[Any, float]] = {}
 
     @property
     def cache_size(self) -> int:
         return len(self._cache)
 
-    def encode(self, text: str) -> np.ndarray:
+    def encode(self, text: str) -> Any:
+        _require_numpy()
         cache_key = hash(text)
         now = time.monotonic()
 
@@ -82,8 +99,9 @@ class CachedEmbeddings:
         self._cache[cache_key] = (embedding, now)
         return embedding
 
-    def encode_batch_cached(self, texts: list[str]) -> list[np.ndarray]:
-        results: list[np.ndarray] = []
+    def encode_batch_cached(self, texts: list[str]) -> list[Any]:
+        _require_numpy()
+        results: list[Any] = []
         uncached_texts: list[str] = []
         uncached_indices: list[int] = []
         now = time.monotonic()

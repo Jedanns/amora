@@ -19,6 +19,10 @@ class SessionResponse(BaseModel):
     combat_active: bool = False
     active_character_id: str | None = None
     version: int = 0
+    character_name: str | None = None
+    character_class: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class GameStateResponse(BaseModel):

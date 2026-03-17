@@ -1,4 +1,6 @@
-import { type CSSProperties, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { Sword, MessageCircle, User, Star, X, Check, Gift, Circle } from 'lucide-react';
+import { hexToRgba } from '../../utils/colors';
 
 interface QuestNote {
   source: string;
@@ -35,235 +37,30 @@ interface QuestsTabProps {
 
 const INITIAL_NOTES_SHOWN = 2;
 
-function hexToRgba(hex: string, alpha: number): string {
-  const cleaned = hex.replace('#', '');
-  const r = parseInt(cleaned.substring(0, 2), 16);
-  const g = parseInt(cleaned.substring(2, 4), 16);
-  const b = parseInt(cleaned.substring(4, 6), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return hex;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflowY: 'auto',
-    padding: '12px 10px',
-    gap: 16,
-  } satisfies CSSProperties,
-
-  sectionHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  } satisfies CSSProperties,
-
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    color: '#c9a84c',
-  } satisfies CSSProperties,
-
-  sectionIcon: {
-    fontSize: 14,
-    color: '#c9a84c',
-  } satisfies CSSProperties,
-
-  sectionCount: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: '#8b7340',
-  } satisfies CSSProperties,
-
-  questList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-  } satisfies CSSProperties,
-
-  card: {
-    backgroundColor: '#1a1a28',
-    borderRadius: 8,
-    border: '1px solid #2a2a3a',
-    padding: '10px 12px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-  } satisfies CSSProperties,
-
-  cardTopRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  } satisfies CSSProperties,
-
-  questName: {
-    fontSize: 14,
-    fontWeight: 700,
-    color: '#e8e8f0',
-    flex: 1,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  } satisfies CSSProperties,
-
-  badgeRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
-  } satisfies CSSProperties,
-
-  badge: (bg: string, color: string): CSSProperties => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '1px 8px',
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: 600,
-    lineHeight: 1.5,
-    letterSpacing: '0.02em',
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-    backgroundColor: hexToRgba(bg, 0.18),
-    border: `1px solid ${hexToRgba(bg, 0.3)}`,
-    color,
-  }),
-
-  actionRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    marginLeft: 'auto',
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  description: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: '#9898a8',
-    lineHeight: 1.5,
-  } satisfies CSSProperties,
-
-  rewardText: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: '#53d769',
-    lineHeight: 1.4,
-  } satisfies CSSProperties,
-
-  notesSection: {
-    borderTop: '1px solid #2a2a3a',
-    paddingTop: 6,
-    marginTop: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-  } satisfies CSSProperties,
-
-  noteSourceRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    fontSize: 11,
-    fontWeight: 600,
-    color: '#c9a84c',
-  } satisfies CSSProperties,
-
-  noteSourceIcon: {
-    fontSize: 12,
-  } satisfies CSSProperties,
-
-  noteItem: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 6,
-    paddingLeft: 4,
-  } satisfies CSSProperties,
-
-  noteBullet: {
-    color: '#8b7340',
-    fontSize: 10,
-    lineHeight: '18px',
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  noteText: {
-    fontSize: 11,
-    color: '#9898a8',
-    lineHeight: 1.5,
-  } satisfies CSSProperties,
-
-  showMoreLink: {
-    fontSize: 11,
-    color: '#c9a84c',
-    cursor: 'pointer',
-    background: 'none',
-    border: 'none',
-    padding: '2px 4px',
-    fontFamily: 'inherit',
-    textAlign: 'left',
-    userSelect: 'none',
-  } satisfies CSSProperties,
-
-  emptyState: {
-    fontSize: 12,
-    color: '#5a5a6e',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    padding: '16px 0',
-  } satisfies CSSProperties,
-};
-
 function IconButton({
   label,
-  children,
+  icon: Icon,
   color,
   hoverColor,
   onClick,
 }: {
   label: string;
-  children: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   color: string;
   hoverColor: string;
   onClick?: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
-
-  const style: CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 24,
-    height: 24,
-    border: 'none',
-    borderRadius: 4,
-    backgroundColor: hovered ? 'rgba(255, 255, 255, 0.06)' : 'transparent',
-    color: hovered ? hoverColor : color,
-    fontSize: 14,
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    padding: 0,
-    fontFamily: 'inherit',
-    lineHeight: 1,
-  };
-
   return (
     <button
-      style={style}
+      className="inline-flex items-center justify-center w-6 h-6 border-none rounded-sm bg-transparent cursor-pointer transition-all duration-150 p-0 leading-none hover:bg-white/[0.06] group"
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       aria-label={label}
       title={label}
+      style={{ color }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = hoverColor; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = color; }}
     >
-      {children}
+      <Icon size={14} />
     </button>
   );
 }
@@ -283,7 +80,7 @@ function QuestNotes({ notes }: { notes: QuestNote[] }) {
   const allEntries = Array.from(grouped.entries());
 
   return (
-    <div style={styles.notesSection}>
+    <div className="border-t border-border-primary pt-1.5 mt-0.5 flex flex-col gap-1">
       {allEntries.map(([source, texts]) => {
         const visibleTexts = expanded
           ? texts
@@ -291,20 +88,20 @@ function QuestNotes({ notes }: { notes: QuestNote[] }) {
         const hiddenCount = texts.length - INITIAL_NOTES_SHOWN;
 
         return (
-          <div key={source} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div style={styles.noteSourceRow}>
-              <span style={styles.noteSourceIcon}>&#128100;</span>
+          <div key={source} className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gold">
+              <User size={12} />
               <span>{source}</span>
             </div>
             {visibleTexts.map((text, i) => (
-              <div key={i} style={styles.noteItem}>
-                <span style={styles.noteBullet}>&#9679;</span>
-                <span style={styles.noteText}>{text}</span>
+              <div key={i} className="flex items-start gap-1.5 pl-1">
+                <Circle size={6} className="text-gold-dim shrink-0 mt-[5px]" />
+                <span className="text-[11px] text-text-secondary leading-normal">{text}</span>
               </div>
             ))}
             {!expanded && hiddenCount > 0 && (
               <button
-                style={styles.showMoreLink}
+                className="text-[11px] text-gold cursor-pointer bg-none border-none px-1 py-0.5 font-[inherit] text-left select-none"
                 onClick={() => setExpanded(true)}
               >
                 Show {hiddenCount} more...
@@ -329,51 +126,54 @@ function QuestCard({
   onBookmark?: () => void;
 }) {
   return (
-    <div style={styles.card}>
-      <div style={styles.cardTopRow}>
-        <span style={styles.questName}>{quest.name}</span>
-        <div style={styles.actionRow}>
+    <div className="bg-bg-card rounded-lg border border-border-primary px-3 py-2.5 flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-bold text-text-primary flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{quest.name}</span>
+        <div className="flex items-center gap-1 ml-auto shrink-0">
           <IconButton
             label={quest.bookmarked ? 'Remove bookmark' : 'Bookmark'}
+            icon={Star}
             color={quest.bookmarked ? '#c9a84c' : '#5a5a6e'}
             hoverColor="#c9a84c"
             onClick={onBookmark}
-          >
-            &#9733;
-          </IconButton>
+          />
           <IconButton
             label="Dismiss"
+            icon={X}
             color="#5a5a6e"
             hoverColor="#e94560"
             onClick={onDismiss}
-          >
-            &#10005;
-          </IconButton>
+          />
           <IconButton
             label="Complete"
+            icon={Check}
             color="#5a5a6e"
             hoverColor="#53d769"
             onClick={onComplete}
-          >
-            &#10003;
-          </IconButton>
+          />
         </div>
       </div>
 
-      <div style={styles.badgeRow}>
-        <span style={styles.badge('#53d769', '#53d769')}>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span
+          className="inline-flex items-center px-2 py-px rounded-full text-[11px] font-semibold leading-normal tracking-[0.02em] whitespace-nowrap select-none"
+          style={{ backgroundColor: hexToRgba('#53d769', 0.18), border: `1px solid ${hexToRgba('#53d769', 0.3)}`, color: '#53d769' }}
+        >
           Lvl {quest.level}
         </span>
-        <span style={styles.badge('#c9a84c', '#c9a84c')}>
+        <span
+          className="inline-flex items-center px-2 py-px rounded-full text-[11px] font-semibold leading-normal tracking-[0.02em] whitespace-nowrap select-none"
+          style={{ backgroundColor: hexToRgba('#c9a84c', 0.18), border: `1px solid ${hexToRgba('#c9a84c', 0.3)}`, color: '#c9a84c' }}
+        >
           {quest.xp_reward} XP
         </span>
       </div>
 
-      <span style={styles.description}>{quest.description}</span>
+      <span className="text-xs italic text-text-secondary leading-normal">{quest.description}</span>
 
       {quest.reward_text && (
-        <span style={styles.rewardText}>
-          &#127873; {quest.reward_text}
+        <span className="text-xs font-semibold text-green leading-snug flex items-center gap-1">
+          <Gift size={12} /> {quest.reward_text}
         </span>
       )}
 
@@ -394,43 +194,47 @@ function RumorCard({
   onDismiss?: () => void;
 }) {
   return (
-    <div style={styles.card}>
-      <div style={styles.cardTopRow}>
-        <span style={styles.questName}>{rumor.name}</span>
-        <div style={styles.actionRow}>
+    <div className="bg-bg-card rounded-lg border border-border-primary px-3 py-2.5 flex flex-col gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-bold text-text-primary flex-1 overflow-hidden text-ellipsis whitespace-nowrap">{rumor.name}</span>
+        <div className="flex items-center gap-1 ml-auto shrink-0">
           <IconButton
             label={rumor.bookmarked ? 'Remove bookmark' : 'Bookmark'}
+            icon={Star}
             color={rumor.bookmarked ? '#c9a84c' : '#5a5a6e'}
             hoverColor="#c9a84c"
             onClick={onBookmark}
-          >
-            &#9733;
-          </IconButton>
+          />
           <IconButton
             label="Dismiss"
+            icon={X}
             color="#5a5a6e"
             hoverColor="#e94560"
             onClick={onDismiss}
-          >
-            &#10005;
-          </IconButton>
+          />
         </div>
       </div>
 
-      <div style={styles.badgeRow}>
-        <span style={styles.badge('#53d769', '#53d769')}>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span
+          className="inline-flex items-center px-2 py-px rounded-full text-[11px] font-semibold leading-normal tracking-[0.02em] whitespace-nowrap select-none"
+          style={{ backgroundColor: hexToRgba('#53d769', 0.18), border: `1px solid ${hexToRgba('#53d769', 0.3)}`, color: '#53d769' }}
+        >
           Lvl {rumor.level}
         </span>
-        <span style={styles.badge('#c9a84c', '#c9a84c')}>
+        <span
+          className="inline-flex items-center px-2 py-px rounded-full text-[11px] font-semibold leading-normal tracking-[0.02em] whitespace-nowrap select-none"
+          style={{ backgroundColor: hexToRgba('#c9a84c', 0.18), border: `1px solid ${hexToRgba('#c9a84c', 0.3)}`, color: '#c9a84c' }}
+        >
           {rumor.xp_reward} XP
         </span>
       </div>
 
-      <span style={styles.description}>{rumor.description}</span>
+      <span className="text-xs italic text-text-secondary leading-normal">{rumor.description}</span>
 
       {rumor.source && (
-        <div style={styles.noteSourceRow}>
-          <span style={styles.noteSourceIcon}>&#128100;</span>
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gold">
+          <User size={12} />
           <span>{rumor.source}</span>
         </div>
       )}
@@ -471,16 +275,16 @@ function QuestsTab({
   );
 
   return (
-    <div style={styles.container}>
+    <div className="flex flex-col h-full overflow-y-auto px-2.5 py-3 gap-4">
       <section>
-        <div style={styles.sectionHeader}>
-          <span style={styles.sectionIcon}>&#9876;</span>
-          <span style={styles.sectionTitle}>QUETES</span>
-          <span style={styles.sectionCount}>({activeQuests.length})</span>
+        <div className="flex items-center gap-2 mb-2">
+          <Sword size={14} className="text-gold" />
+          <span className="text-xs font-bold tracking-[0.08em] uppercase text-gold">QUETES</span>
+          <span className="text-[11px] font-semibold text-gold-dim">({activeQuests.length})</span>
         </div>
-        <div style={styles.questList}>
+        <div className="flex flex-col gap-2">
           {activeQuests.length === 0 ? (
-            <div style={styles.emptyState}>Aucune quete active</div>
+            <div className="text-xs text-text-dim italic text-center py-4">Aucune quete active</div>
           ) : (
             activeQuests.map(quest => (
               <QuestCard
@@ -496,14 +300,14 @@ function QuestsTab({
       </section>
 
       <section>
-        <div style={styles.sectionHeader}>
-          <span style={styles.sectionIcon}>&#128172;</span>
-          <span style={styles.sectionTitle}>RUMEURS</span>
-          <span style={styles.sectionCount}>({rumors.length})</span>
+        <div className="flex items-center gap-2 mb-2">
+          <MessageCircle size={14} className="text-gold" />
+          <span className="text-xs font-bold tracking-[0.08em] uppercase text-gold">RUMEURS</span>
+          <span className="text-[11px] font-semibold text-gold-dim">({rumors.length})</span>
         </div>
-        <div style={styles.questList}>
+        <div className="flex flex-col gap-2">
           {rumors.length === 0 ? (
-            <div style={styles.emptyState}>Aucune rumeur entendue</div>
+            <div className="text-xs text-text-dim italic text-center py-4">Aucune rumeur entendue</div>
           ) : (
             rumors.map(rumor => (
               <RumorCard

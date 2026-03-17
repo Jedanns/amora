@@ -1,113 +1,39 @@
-import { type CSSProperties, type ButtonHTMLAttributes, useState } from 'react';
+import type { ButtonHTMLAttributes } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'gold' | 'danger';
   size?: 'sm' | 'md' | 'lg';
 }
 
-const sizeMap: Record<NonNullable<ButtonProps['size']>, CSSProperties> = {
-  sm: { padding: '4px 10px', fontSize: 11, borderRadius: 4 },
-  md: { padding: '7px 16px', fontSize: 13, borderRadius: 6 },
-  lg: { padding: '10px 24px', fontSize: 15, borderRadius: 8 },
+const sizeClasses: Record<NonNullable<ButtonProps['size']>, string> = {
+  sm: 'px-2.5 py-1 text-[11px] rounded-sm',
+  md: 'px-4 py-[7px] text-[13px] rounded-md',
+  lg: 'px-6 py-2.5 text-[15px] rounded-lg',
 };
 
-interface VariantTokens {
-  bg: string;
-  bgHover: string;
-  border: string;
-  borderHover: string;
-  color: string;
-  glow: string;
-}
-
-const variants: Record<NonNullable<ButtonProps['variant']>, VariantTokens> = {
-  primary: {
-    bg: '#e94560',
-    bgHover: '#ff5a75',
-    border: '#e94560',
-    borderHover: '#ff5a75',
-    color: '#ffffff',
-    glow: '0 0 12px rgba(233, 69, 96, 0.35)',
-  },
-  secondary: {
-    bg: '#1a1a28',
-    bgHover: '#252535',
-    border: '#2a2a3a',
-    borderHover: '#9898a8',
-    color: '#e8e8f0',
-    glow: 'none',
-  },
-  gold: {
-    bg: '#c9a84c',
-    bgHover: '#e5c55a',
-    border: '#c9a84c',
-    borderHover: '#e5c55a',
-    color: '#0a0a0f',
-    glow: '0 0 12px rgba(201, 168, 76, 0.3)',
-  },
-  danger: {
-    bg: 'rgba(233, 69, 96, 0.15)',
-    bgHover: 'rgba(233, 69, 96, 0.25)',
-    border: '#e94560',
-    borderHover: '#ff5a75',
-    color: '#e94560',
-    glow: '0 0 12px rgba(233, 69, 96, 0.25)',
-  },
+const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
+  primary:
+    'bg-red text-white border-red hover:bg-red-bright hover:border-red-bright hover:shadow-[0_0_12px_rgba(233,69,96,0.35)]',
+  secondary:
+    'bg-bg-card text-text-primary border-border-primary hover:bg-bg-hover hover:border-text-secondary',
+  gold:
+    'bg-gold text-bg-primary border-gold hover:bg-gold-bright hover:border-gold-bright hover:shadow-gold',
+  danger:
+    'bg-red/15 text-red border-red hover:bg-red/25 hover:border-red-bright hover:shadow-[0_0_12px_rgba(233,69,96,0.25)]',
 };
-
-function buildStyle(
-  variant: NonNullable<ButtonProps['variant']>,
-  size: NonNullable<ButtonProps['size']>,
-  hovered: boolean,
-  disabled: boolean,
-): CSSProperties {
-  const v = variants[variant];
-  const s = sizeMap[size];
-
-  return {
-    ...s,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    fontFamily: 'inherit',
-    fontWeight: 600,
-    letterSpacing: '0.02em',
-    lineHeight: 1.4,
-    border: '1px solid',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    transition: 'all 0.2s ease',
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-    opacity: disabled ? 0.45 : 1,
-    backgroundColor: disabled ? v.bg : hovered ? v.bgHover : v.bg,
-    borderColor: disabled ? v.border : hovered ? v.borderHover : v.border,
-    color: v.color,
-    boxShadow: !disabled && hovered ? v.glow : 'none',
-  };
-}
 
 function Button({
   variant = 'secondary',
   size = 'md',
   disabled = false,
-  style,
+  className = '',
   children,
   ...rest
 }: ButtonProps) {
-  const [hovered, setHovered] = useState(false);
-
-  const computedStyle: CSSProperties = {
-    ...buildStyle(variant, size, hovered, !!disabled),
-    ...style,
-  };
-
   return (
     <button
-      style={computedStyle}
+      className={`inline-flex items-center justify-center gap-1.5 font-semibold tracking-wide leading-snug border whitespace-nowrap select-none transition-all duration-200 ${sizeClasses[size]} ${variantClasses[variant]} ${disabled ? 'opacity-45 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       disabled={disabled}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       {...rest}
     >
       {children}

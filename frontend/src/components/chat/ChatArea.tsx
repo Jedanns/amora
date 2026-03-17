@@ -1,11 +1,11 @@
 import {
-  type CSSProperties,
   type KeyboardEvent,
   useState,
   useRef,
   useEffect,
   useCallback,
 } from 'react';
+import { SendHorizonal } from 'lucide-react';
 
 interface ChatMessage {
   id: string;
@@ -22,198 +22,6 @@ interface ChatAreaProps {
   onSendMessage: (message: string) => void;
   playerName?: string;
 }
-
-const containerStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  overflow: 'hidden',
-  backgroundColor: '#0a0a0f',
-};
-
-const messageListStyle: CSSProperties = {
-  flex: 1,
-  overflowY: 'auto',
-  padding: '16px 24px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 16,
-};
-
-const inputContainerStyle: CSSProperties = {
-  flexShrink: 0,
-  borderTop: '1px solid #2a2a3a',
-  backgroundColor: '#151520',
-  padding: '12px 16px',
-  display: 'flex',
-  alignItems: 'flex-end',
-  gap: 10,
-};
-
-const textareaStyle: CSSProperties = {
-  flex: 1,
-  resize: 'none',
-  border: '1px solid #2a2a3a',
-  borderRadius: 8,
-  backgroundColor: '#1e1e2e',
-  color: '#e8e8f0',
-  fontSize: 14,
-  lineHeight: 1.5,
-  padding: '10px 14px',
-  fontFamily: 'inherit',
-  outline: 'none',
-  minHeight: 42,
-  maxHeight: 160,
-  overflow: 'auto',
-  transition: 'border-color 0.2s ease',
-};
-
-const sendButtonBase: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 42,
-  height: 42,
-  border: '1px solid #c9a84c',
-  borderRadius: 8,
-  backgroundColor: 'rgba(201, 168, 76, 0.12)',
-  color: '#c9a84c',
-  fontSize: 18,
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  flexShrink: 0,
-  padding: 0,
-  fontFamily: 'inherit',
-  lineHeight: 1,
-};
-
-function assistantBubbleStyle(): CSSProperties {
-  return {
-    position: 'relative',
-    backgroundColor: '#1a1a28',
-    border: '1px solid #2a2a3a',
-    borderRadius: 10,
-    padding: '14px 18px',
-    maxWidth: '100%',
-  };
-}
-
-const assistantLabel: CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: '#c9a84c',
-  marginBottom: 2,
-};
-
-const assistantContext: CSSProperties = {
-  fontSize: 10,
-  color: '#9898a8',
-  letterSpacing: '0.03em',
-  marginBottom: 10,
-  opacity: 0.7,
-};
-
-const narrativeText: CSSProperties = {
-  fontSize: 14,
-  lineHeight: 1.7,
-  color: '#e8e8f0',
-  whiteSpace: 'pre-wrap',
-  wordBreak: 'break-word',
-};
-
-const ttsButtonStyle: CSSProperties = {
-  position: 'absolute',
-  top: 10,
-  right: 10,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 24,
-  height: 24,
-  border: '1px solid #2a2a3a',
-  borderRadius: 4,
-  backgroundColor: 'transparent',
-  color: '#9898a8',
-  fontSize: 12,
-  cursor: 'pointer',
-  padding: 0,
-  fontFamily: 'inherit',
-  lineHeight: 1,
-  transition: 'all 0.2s ease',
-};
-
-function userBubbleStyle(): CSSProperties {
-  return {
-    alignSelf: 'flex-end',
-    backgroundColor: 'rgba(233, 69, 96, 0.08)',
-    border: '1px solid rgba(233, 69, 96, 0.2)',
-    borderRadius: 10,
-    padding: '10px 16px',
-    maxWidth: '75%',
-  };
-}
-
-const userLabel: CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: '#e94560',
-  marginBottom: 4,
-  textAlign: 'right',
-};
-
-const userText: CSSProperties = {
-  fontSize: 14,
-  lineHeight: 1.6,
-  color: '#e8e8f0',
-  whiteSpace: 'pre-wrap',
-  wordBreak: 'break-word',
-};
-
-function systemBubbleStyle(): CSSProperties {
-  return {
-    alignSelf: 'center',
-    backgroundColor: 'rgba(201, 168, 76, 0.08)',
-    border: '1px solid rgba(201, 168, 76, 0.2)',
-    borderRadius: 6,
-    padding: '8px 20px',
-    maxWidth: '85%',
-    textAlign: 'center',
-  };
-}
-
-const systemText: CSSProperties = {
-  fontSize: 12,
-  lineHeight: 1.5,
-  color: '#c9a84c',
-  fontStyle: 'italic',
-};
-
-const typingContainer: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  padding: '10px 18px',
-  backgroundColor: 'rgba(201, 168, 76, 0.05)',
-  border: '1px solid rgba(201, 168, 76, 0.1)',
-  borderRadius: 10,
-};
-
-const typingText: CSSProperties = {
-  fontSize: 12,
-  color: '#c9a84c',
-  fontStyle: 'italic',
-  letterSpacing: '0.02em',
-};
-
-const dotContainer: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 3,
-};
 
 function TypingDot({ delay }: { delay: number }) {
   const [opacity, setOpacity] = useState(0.3);
@@ -234,62 +42,41 @@ function TypingDot({ delay }: { delay: number }) {
     return () => cancelAnimationFrame(frame);
   }, [delay]);
 
-  const style: CSSProperties = {
-    width: 5,
-    height: 5,
-    borderRadius: '50%',
-    backgroundColor: '#c9a84c',
-    opacity,
-    transition: 'opacity 0.1s',
-  };
-
-  return <span style={style} />;
+  return (
+    <span
+      className="w-[5px] h-[5px] rounded-full bg-gold transition-opacity duration-100"
+      style={{ opacity }}
+    />
+  );
 }
 
 function TypingIndicator() {
   return (
-    <div style={typingContainer}>
-      <div style={dotContainer}>
+    <div className="flex items-center gap-2 px-4.5 py-2.5 bg-gold/5 border border-gold/10 rounded-[10px]">
+      <div className="flex items-center gap-[3px]">
         <TypingDot delay={0} />
         <TypingDot delay={200} />
         <TypingDot delay={400} />
       </div>
-      <span style={typingText}>Le Maitre du Donjon reflechit...</span>
+      <span className="text-xs text-gold italic tracking-[0.02em]">Le Maitre du Donjon reflechit...</span>
     </div>
   );
 }
 
 function AssistantMessage({ message }: { message: ChatMessage }) {
-  const [ttsHovered, setTtsHovered] = useState(false);
-
   const contextParts = [message.location, message.timeOfDay].filter(Boolean);
 
-  const ttsStyle: CSSProperties = {
-    ...ttsButtonStyle,
-    borderColor: ttsHovered ? '#9898a8' : '#2a2a3a',
-    color: ttsHovered ? '#e8e8f0' : '#9898a8',
-  };
-
   return (
-    <div style={assistantBubbleStyle()}>
-      <div style={assistantLabel}>Maitre du Donjon</div>
+    <div className="relative bg-bg-card border border-border-primary rounded-[10px] px-4.5 py-3.5 max-w-full">
+      <div className="text-[10px] font-bold tracking-[0.1em] uppercase text-gold mb-0.5">Maitre du Donjon</div>
       {contextParts.length > 0 && (
-        <div style={assistantContext}>
+        <div className="text-[10px] text-text-secondary tracking-[0.03em] mb-2.5 opacity-70">
           {contextParts.join(' \u00B7 ')}
         </div>
       )}
-      <div style={narrativeText}>{message.content}</div>
-      <button
-        style={ttsStyle}
-        onMouseEnter={() => setTtsHovered(true)}
-        onMouseLeave={() => setTtsHovered(false)}
-        aria-label="Text to speech"
-        title="Lire a voix haute"
-      >
-        &#9835;
-      </button>
+      <div className="text-sm leading-[1.7] text-text-primary whitespace-pre-wrap break-words">{message.content}</div>
       {message.timestamp && (
-        <div style={{ fontSize: 9, color: '#9898a8', marginTop: 8, opacity: 0.5 }}>
+        <div className="text-[9px] text-text-secondary mt-2 opacity-50">
           {message.timestamp}
         </div>
       )}
@@ -299,11 +86,11 @@ function AssistantMessage({ message }: { message: ChatMessage }) {
 
 function UserMessage({ message, playerName }: { message: ChatMessage; playerName?: string }) {
   return (
-    <div style={userBubbleStyle()}>
-      <div style={userLabel}>{playerName ?? 'Joueur'}</div>
-      <div style={userText}>{message.content}</div>
+    <div className="self-end bg-red/[0.08] border border-red/20 rounded-[10px] px-4 py-2.5 max-w-[75%]">
+      <div className="text-[10px] font-bold tracking-[0.1em] uppercase text-red mb-1 text-right">{playerName ?? 'Joueur'}</div>
+      <div className="text-sm leading-relaxed text-text-primary whitespace-pre-wrap break-words">{message.content}</div>
       {message.timestamp && (
-        <div style={{ fontSize: 9, color: '#9898a8', marginTop: 6, opacity: 0.5, textAlign: 'right' }}>
+        <div className="text-[9px] text-text-secondary mt-1.5 opacity-50 text-right">
           {message.timestamp}
         </div>
       )}
@@ -313,16 +100,14 @@ function UserMessage({ message, playerName }: { message: ChatMessage; playerName
 
 function SystemMessage({ message }: { message: ChatMessage }) {
   return (
-    <div style={systemBubbleStyle()}>
-      <div style={systemText}>{message.content}</div>
+    <div className="self-center bg-gold/[0.08] border border-gold/20 rounded-md px-5 py-2 max-w-[85%] text-center">
+      <div className="text-xs leading-normal text-gold italic">{message.content}</div>
     </div>
   );
 }
 
 function ChatArea({ messages, isGenerating, onSendMessage, playerName }: ChatAreaProps) {
   const [draft, setDraft] = useState('');
-  const [sendHovered, setSendHovered] = useState(false);
-  const [inputFocused, setInputFocused] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -361,24 +146,12 @@ function ChatArea({ messages, isGenerating, onSendMessage, playerName }: ChatAre
     [handleSend],
   );
 
-  const currentTextareaStyle: CSSProperties = {
-    ...textareaStyle,
-    borderColor: inputFocused ? '#c9a84c' : '#2a2a3a',
-  };
-
-  const currentSendStyle: CSSProperties = {
-    ...sendButtonBase,
-    backgroundColor: sendHovered
-      ? 'rgba(201, 168, 76, 0.25)'
-      : 'rgba(201, 168, 76, 0.12)',
-    boxShadow: sendHovered ? '0 0 10px rgba(201, 168, 76, 0.2)' : 'none',
-    opacity: draft.trim() && !isGenerating ? 1 : 0.4,
-    cursor: draft.trim() && !isGenerating ? 'pointer' : 'not-allowed',
-  };
+  const canSend = draft.trim() && !isGenerating;
 
   return (
-    <div style={containerStyle}>
-      <div ref={listRef} style={messageListStyle}>
+    <div className="flex flex-col h-full overflow-hidden bg-bg-primary">
+      {/* Message list */}
+      <div ref={listRef} className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
         {messages.map((msg) => {
           switch (msg.role) {
             case 'assistant':
@@ -392,32 +165,33 @@ function ChatArea({ messages, isGenerating, onSendMessage, playerName }: ChatAre
         {isGenerating && <TypingIndicator />}
       </div>
 
-      <div style={inputContainerStyle}>
+      {/* Input area */}
+      <div className="shrink-0 border-t border-border-primary bg-bg-panel px-4 py-3 flex items-end gap-2.5">
         <textarea
           ref={textareaRef}
-          style={currentTextareaStyle}
+          className="flex-1 resize-none border border-border-primary rounded-lg bg-bg-input text-text-primary text-sm leading-normal px-3.5 py-2.5 font-[inherit] outline-none min-h-[42px] max-h-[160px] overflow-auto transition-colors duration-200 focus:border-gold"
           value={draft}
           onChange={(e) => {
             setDraft(e.target.value);
             autoResize();
           }}
           onKeyDown={handleKeyDown}
-          onFocus={() => setInputFocused(true)}
-          onBlur={() => setInputFocused(false)}
           placeholder="Que faites-vous ?"
           rows={1}
           disabled={isGenerating}
         />
         <button
-          style={currentSendStyle}
+          className={`inline-flex items-center justify-center w-[42px] h-[42px] border border-gold rounded-lg text-gold text-lg shrink-0 p-0 font-[inherit] leading-none transition-all duration-200 ${
+            canSend
+              ? 'bg-gold/12 cursor-pointer hover:bg-gold/25 hover:shadow-[0_0_10px_rgba(201,168,76,0.2)]'
+              : 'bg-gold/12 opacity-40 cursor-not-allowed'
+          }`}
           onClick={handleSend}
-          onMouseEnter={() => setSendHovered(true)}
-          onMouseLeave={() => setSendHovered(false)}
-          disabled={!draft.trim() || isGenerating}
+          disabled={!canSend}
           aria-label="Envoyer"
           title="Envoyer (Entree)"
         >
-          &#10148;
+          <SendHorizonal size={18} />
         </button>
       </div>
     </div>

@@ -1,4 +1,6 @@
-import { type CSSProperties, useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { Search, User, Skull, Heart, ChevronRight } from 'lucide-react';
+import { hexToRgba } from '../../utils/colors';
 
 type Disposition = 'Friendly' | 'Curious' | 'Guarded' | 'Hostile' | 'Neutral' | 'Fearful';
 
@@ -28,315 +30,6 @@ const DISPOSITION_COLORS: Record<Disposition, string> = {
   Fearful: '#b06aff',
 };
 
-function hexToRgba(hex: string, alpha: number): string {
-  const cleaned = hex.replace('#', '');
-  const r = parseInt(cleaned.substring(0, 2), 16);
-  const g = parseInt(cleaned.substring(2, 4), 16);
-  const b = parseInt(cleaned.substring(4, 6), 16);
-  if (isNaN(r) || isNaN(g) || isNaN(b)) return hex;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflow: 'hidden',
-  } satisfies CSSProperties,
-
-  toggleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 0,
-    padding: '10px 10px 0',
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  toggleButton: (active: boolean, hovered: boolean): CSSProperties => ({
-    flex: 1,
-    padding: '7px 12px',
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    fontFamily: 'inherit',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    border: '1px solid',
-    userSelect: 'none',
-    lineHeight: 1.4,
-    backgroundColor: active
-      ? 'rgba(201, 168, 76, 0.12)'
-      : hovered
-        ? '#252535'
-        : 'transparent',
-    borderColor: active ? '#c9a84c' : '#2a2a3a',
-    color: active ? '#c9a84c' : hovered ? '#e8e8f0' : '#9898a8',
-    boxShadow: active ? '0 0 8px rgba(201, 168, 76, 0.15)' : 'none',
-  }),
-
-  toggleLeft: {
-    borderRadius: '6px 0 0 6px',
-    borderRight: 'none',
-  } satisfies CSSProperties,
-
-  toggleRight: {
-    borderRadius: '0 6px 6px 0',
-  } satisfies CSSProperties,
-
-  searchContainer: {
-    padding: '10px',
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  searchWrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#1a1a28',
-    border: '1px solid #2a2a3a',
-    borderRadius: 6,
-    padding: '6px 10px',
-    transition: 'border-color 0.2s ease',
-  } satisfies CSSProperties,
-
-  searchIcon: {
-    fontSize: 13,
-    color: '#5a5a6e',
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  searchInput: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    border: 'none',
-    outline: 'none',
-    fontSize: 12,
-    color: '#e8e8f0',
-    fontFamily: 'inherit',
-    lineHeight: 1.4,
-  } satisfies CSSProperties,
-
-  listContainer: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '0 10px 12px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-  } satisfies CSSProperties,
-
-  npcCard: (isDead: boolean, hovered: boolean): CSSProperties => ({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-    backgroundColor: '#1a1a28',
-    borderRadius: 8,
-    border: '1px solid #2a2a3a',
-    borderLeft: `3px solid ${isDead ? '#5a5a6e' : '#8b7340'}`,
-    padding: '10px 12px',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-    opacity: isDead ? 0.6 : 1,
-    filter: isDead ? 'grayscale(0.5)' : 'none',
-    ...(hovered && {
-      borderColor: isDead ? '#6a6a7e' : '#8b7340',
-      backgroundColor: '#1e1e2e',
-    }),
-  }),
-
-  cardTopRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  } satisfies CSSProperties,
-
-  portrait: (isDead: boolean): CSSProperties => ({
-    width: 56,
-    height: 56,
-    borderRadius: 8,
-    backgroundColor: '#0a0a0f',
-    border: `1px solid ${isDead ? '#2a2a3a' : '#2a2a3a'}`,
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 20,
-    color: isDead ? '#5a5a6e' : '#8b7340',
-    overflow: 'hidden',
-    filter: isDead ? 'grayscale(1)' : 'none',
-  }),
-
-  portraitImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    borderRadius: 8,
-  } satisfies CSSProperties,
-
-  cardInfo: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-    minWidth: 0,
-  } satisfies CSSProperties,
-
-  nameRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  } satisfies CSSProperties,
-
-  npcName: {
-    fontSize: 18,
-    fontWeight: 700,
-    color: '#e8e8f0',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  } satisfies CSSProperties,
-
-  chevron: (expanded: boolean): CSSProperties => ({
-    fontSize: 14,
-    color: '#5a5a6e',
-    transition: 'transform 0.2s ease',
-    transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-    flexShrink: 0,
-    userSelect: 'none',
-  }),
-
-  dispositionBadge: (color: string): CSSProperties => ({
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '1px 10px',
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: 600,
-    lineHeight: 1.5,
-    letterSpacing: '0.02em',
-    whiteSpace: 'nowrap',
-    userSelect: 'none',
-    backgroundColor: hexToRgba(color, 0.15),
-    border: `1px solid ${hexToRgba(color, 0.3)}`,
-    color,
-  }),
-
-  relationshipRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 2,
-  } satisfies CSSProperties,
-
-  relationshipLabel: {
-    fontSize: 11,
-    fontWeight: 700,
-    color: '#8b7340',
-    minWidth: 22,
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  barContainer: {
-    flex: 1,
-    position: 'relative',
-    height: 14,
-    display: 'flex',
-    alignItems: 'center',
-  } satisfies CSSProperties,
-
-  barTrack: {
-    width: '100%',
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 2,
-    overflow: 'visible',
-    position: 'relative',
-  } satisfies CSSProperties,
-
-  barFill: (percent: number): CSSProperties => ({
-    width: `${Math.min(100, Math.max(0, percent))}%`,
-    height: '100%',
-    backgroundColor: '#c9a84c',
-    borderRadius: 2,
-    transition: 'width 0.4s ease',
-    boxShadow: percent > 0 ? '0 0 6px rgba(201, 168, 76, 0.4)' : 'none',
-  }),
-
-  heartIcon: (percent: number, isDead: boolean): CSSProperties => ({
-    position: 'absolute',
-    left: `${Math.min(100, Math.max(0, percent))}%`,
-    top: '50%',
-    transform: 'translate(-50%, -50%)',
-    fontSize: 12,
-    color: isDead ? '#5a5a6e' : '#e84393',
-    filter: isDead ? 'grayscale(1)' : `drop-shadow(0 0 4px rgba(232, 67, 147, 0.5))`,
-    zIndex: 1,
-    lineHeight: 1,
-    pointerEvents: 'none',
-  }),
-
-  expandedContent: {
-    borderTop: '1px solid #2a2a3a',
-    paddingTop: 8,
-    marginTop: 2,
-  } satisfies CSSProperties,
-
-  npcTitle: {
-    fontSize: 11,
-    fontStyle: 'italic',
-    color: '#8b7340',
-    marginBottom: 4,
-  } satisfies CSSProperties,
-
-  notesText: {
-    fontSize: 12,
-    color: '#9898a8',
-    lineHeight: 1.5,
-  } satisfies CSSProperties,
-
-  emptyState: {
-    fontSize: 12,
-    color: '#5a5a6e',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    padding: '24px 0',
-  } satisfies CSSProperties,
-};
-
-function ToggleButton({
-  active,
-  label,
-  side,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  side: 'left' | 'right';
-  onClick: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-
-  const sideStyle = side === 'left' ? styles.toggleLeft : styles.toggleRight;
-  const merged: CSSProperties = {
-    ...styles.toggleButton(active, hovered),
-    ...sideStyle,
-  };
-
-  return (
-    <button
-      style={merged}
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {label}
-    </button>
-  );
-}
-
 function NpcCard({
   npc,
   onSelect,
@@ -344,7 +37,6 @@ function NpcCard({
   npc: NpcRelationship;
   onSelect?: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const percent = npc.max_relationship > 0
@@ -360,39 +52,71 @@ function NpcCard({
 
   return (
     <div
-      style={styles.npcCard(npc.is_dead, hovered)}
+      className={`flex flex-col gap-2 bg-bg-card rounded-lg border border-border-primary border-l-[3px] px-3 py-2.5 cursor-pointer transition-all duration-150 hover:bg-bg-input ${
+        npc.is_dead ? 'opacity-60 grayscale-[0.5]' : ''
+      }`}
+      style={{ borderLeftColor: npc.is_dead ? '#5a5a6e' : '#8b7340' }}
       onClick={handleClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
-      <div style={styles.cardTopRow}>
-        <div style={styles.portrait(npc.is_dead)}>
+      <div className="flex items-center gap-2.5">
+        <div
+          className={`w-14 h-14 rounded-lg bg-bg-primary border border-border-primary shrink-0 flex items-center justify-center overflow-hidden ${
+            npc.is_dead ? 'grayscale' : ''
+          }`}
+        >
           {npc.portrait ? (
-            <img src={npc.portrait} alt={npc.name} style={styles.portraitImage} />
+            <img src={npc.portrait} alt={npc.name} className="w-full h-full object-cover rounded-lg" />
+          ) : npc.is_dead ? (
+            <Skull size={20} className="text-[#5a5a6e]" />
           ) : (
-            npc.is_dead ? '\u{1F480}' : '\u{1F9D9}'
+            <User size={20} className="text-border-gold" />
           )}
         </div>
 
-        <div style={styles.cardInfo}>
-          <div style={styles.nameRow}>
-            <span style={styles.npcName}>{npc.name}</span>
-            <span style={styles.chevron(expanded)}>&#9654;</span>
+        <div className="flex-1 flex flex-col gap-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-lg font-bold text-text-primary overflow-hidden text-ellipsis whitespace-nowrap">
+              {npc.name}
+            </span>
+            <ChevronRight
+              size={14}
+              className={`text-[#5a5a6e] shrink-0 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
+            />
           </div>
 
-          <span style={styles.dispositionBadge(dispColor)}>
+          <span
+            className="inline-flex items-center self-start px-2.5 py-px rounded-full text-[11px] font-semibold leading-normal tracking-[0.02em] whitespace-nowrap select-none"
+            style={{
+              backgroundColor: hexToRgba(dispColor, 0.15),
+              border: `1px solid ${hexToRgba(dispColor, 0.3)}`,
+              color: dispColor,
+            }}
+          >
             {npc.disposition}
           </span>
 
-          <div style={styles.relationshipRow}>
-            <span style={styles.relationshipLabel}>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[11px] font-bold text-border-gold min-w-[22px] shrink-0">
               R{npc.relationship_level}
             </span>
-            <div style={styles.barContainer}>
-              <div style={styles.barTrack}>
-                <div style={styles.barFill(percent)} />
-                <span style={styles.heartIcon(percent, npc.is_dead)}>
-                  {npc.is_dead ? '\u{1F480}' : '\u2764'}
+            <div className="flex-1 relative h-3.5 flex items-center">
+              <div className="w-full h-1 bg-white/[0.08] rounded-sm overflow-visible relative">
+                <div
+                  className="h-full bg-gold rounded-sm transition-[width] duration-400"
+                  style={{
+                    width: `${Math.min(100, Math.max(0, percent))}%`,
+                    boxShadow: percent > 0 ? '0 0 6px rgba(201, 168, 76, 0.4)' : 'none',
+                  }}
+                />
+                <span
+                  className="absolute top-1/2 -translate-y-1/2 z-[1] pointer-events-none"
+                  style={{ left: `${Math.min(100, Math.max(0, percent))}%`, transform: 'translate(-50%, -50%)' }}
+                >
+                  {npc.is_dead ? (
+                    <Skull size={12} className="text-[#5a5a6e] grayscale" />
+                  ) : (
+                    <Heart size={12} className="text-pink fill-pink drop-shadow-[0_0_4px_rgba(232,67,147,0.5)]" />
+                  )}
                 </span>
               </div>
             </div>
@@ -401,12 +125,12 @@ function NpcCard({
       </div>
 
       {expanded && (npc.title || npc.notes) && (
-        <div style={styles.expandedContent}>
+        <div className="border-t border-border-primary pt-2 mt-0.5">
           {npc.title && (
-            <div style={styles.npcTitle}>{npc.title}</div>
+            <div className="text-[11px] italic text-border-gold mb-1">{npc.title}</div>
           )}
           {npc.notes && (
-            <div style={styles.notesText}>{npc.notes}</div>
+            <div className="text-xs text-text-secondary leading-normal">{npc.notes}</div>
           )}
         </div>
       )}
@@ -442,33 +166,42 @@ function RelationshipsTab({ relationships, onSelectNpc }: RelationshipsTabProps)
     );
   }, [currentList, searchQuery]);
 
-  const searchWrapperStyle: CSSProperties = {
-    ...styles.searchWrapper,
-    borderColor: searchFocused ? '#8b7340' : '#2a2a3a',
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.toggleRow}>
-        <ToggleButton
-          active={activeView === 'relationships'}
-          label="RELATIONSHIPS"
-          side="left"
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Toggle buttons */}
+      <div className="flex items-center px-2.5 pt-2.5 shrink-0">
+        <button
+          className={`flex-1 py-[7px] px-3 text-[11px] font-bold tracking-[0.08em] uppercase cursor-pointer transition-all duration-200 select-none border rounded-l-md border-r-0 ${
+            activeView === 'relationships'
+              ? 'bg-gold/12 border-gold text-gold shadow-[0_0_8px_rgba(201,168,76,0.15)]'
+              : 'bg-transparent border-border-primary text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+          }`}
           onClick={() => setActiveView('relationships')}
-        />
-        <ToggleButton
-          active={activeView === 'ossuary'}
-          label="OSSUARY"
-          side="right"
+        >
+          RELATIONSHIPS
+        </button>
+        <button
+          className={`flex-1 py-[7px] px-3 text-[11px] font-bold tracking-[0.08em] uppercase cursor-pointer transition-all duration-200 select-none border rounded-r-md ${
+            activeView === 'ossuary'
+              ? 'bg-gold/12 border-gold text-gold shadow-[0_0_8px_rgba(201,168,76,0.15)]'
+              : 'bg-transparent border-border-primary text-text-secondary hover:bg-bg-hover hover:text-text-primary'
+          }`}
           onClick={() => setActiveView('ossuary')}
-        />
+        >
+          OSSUARY
+        </button>
       </div>
 
-      <div style={styles.searchContainer}>
-        <div style={searchWrapperStyle}>
-          <span style={styles.searchIcon}>&#128269;</span>
+      {/* Search */}
+      <div className="p-2.5 shrink-0">
+        <div
+          className={`flex items-center gap-2 bg-bg-card border rounded-md px-2.5 py-1.5 transition-colors duration-200 ${
+            searchFocused ? 'border-border-gold' : 'border-border-primary'
+          }`}
+        >
+          <Search size={13} className="text-[#5a5a6e] shrink-0" />
           <input
-            style={styles.searchInput}
+            className="flex-1 bg-transparent border-none outline-none text-xs text-text-primary placeholder:text-text-dim"
             type="text"
             placeholder="Rechercher des PNJ..."
             value={searchQuery}
@@ -479,9 +212,10 @@ function RelationshipsTab({ relationships, onSelectNpc }: RelationshipsTabProps)
         </div>
       </div>
 
-      <div style={styles.listContainer}>
+      {/* NPC list */}
+      <div className="flex-1 overflow-y-auto px-2.5 pb-3 flex flex-col gap-2">
         {filtered.length === 0 ? (
-          <div style={styles.emptyState}>
+          <div className="text-xs text-[#5a5a6e] italic text-center py-6">
             {searchQuery.trim()
               ? 'Aucun PNJ correspondant'
               : activeView === 'ossuary'

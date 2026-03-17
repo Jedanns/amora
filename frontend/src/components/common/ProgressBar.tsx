@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react';
-
 interface ProgressBarProps {
   current: number;
   max: number;
@@ -9,40 +7,6 @@ interface ProgressBarProps {
   label?: string;
   labelColor?: string;
 }
-
-const styles = {
-  container: {
-    width: '100%',
-  } satisfies CSSProperties,
-
-  labelRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: 4,
-    fontSize: 11,
-    fontWeight: 500,
-    letterSpacing: '0.02em',
-  } satisfies CSSProperties,
-
-  track: (height: number): CSSProperties => ({
-    width: '100%',
-    height,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: height / 2,
-    overflow: 'hidden',
-    position: 'relative',
-  }),
-
-  fill: (percent: number, color: string, height: number): CSSProperties => ({
-    width: `${Math.min(100, Math.max(0, percent))}%`,
-    height: '100%',
-    backgroundColor: color,
-    borderRadius: height / 2,
-    transition: 'width 0.4s ease',
-    boxShadow: percent > 0 ? `0 0 6px ${color}40` : 'none',
-  }),
-};
 
 function ProgressBar({
   current,
@@ -56,9 +20,9 @@ function ProgressBar({
   const percent = max > 0 ? (current / max) * 100 : 0;
 
   return (
-    <div style={styles.container}>
+    <div className="w-full">
       {showLabel && (
-        <div style={styles.labelRow}>
+        <div className="flex justify-between items-baseline mb-1 text-[11px] font-medium tracking-wide">
           <span style={{ color: labelColor ?? '#9898a8' }}>
             {label ?? ''}
           </span>
@@ -67,8 +31,19 @@ function ProgressBar({
           </span>
         </div>
       )}
-      <div style={styles.track(height)}>
-        <div style={styles.fill(percent, color, height)} />
+      <div
+        className="w-full bg-white/8 overflow-hidden relative"
+        style={{ height, borderRadius: height / 2 }}
+      >
+        <div
+          className="h-full transition-[width] duration-400 ease-out"
+          style={{
+            width: `${Math.min(100, Math.max(0, percent))}%`,
+            backgroundColor: color,
+            borderRadius: height / 2,
+            boxShadow: percent > 0 ? `0 0 6px ${color}40` : 'none',
+          }}
+        />
       </div>
     </div>
   );

@@ -1,0 +1,15 @@
+{
+  "entries": [
+    {
+      "name": "Excalibur",
+      "category": "conditional",
+      "keys": ["excalibur", "epee legendaire", "lame sacree"],
+      "content": "Excalibur est une epee legendaire forgee par les anciens elfes. Elle brille d'une lueur bleue en presence du mal. Seul un elu au coeur pur peut la manier. Elle confere +5 en attaque et inflige des degats doubles aux morts-vivants.",
+      "priority": 400,
+      "order": 50,
+      "trigger_chance": 100,
+      "scan_depth": 30,
+      "enabled": true
+    }
+  ]
+}

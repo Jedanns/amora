@@ -1,4 +1,5 @@
-import { type CSSProperties, useState } from 'react';
+import { useState } from 'react';
+import { Save, HelpCircle, ChevronDown, ChevronRight, Star } from 'lucide-react';
 
 interface RightPanelProps {
   character: {
@@ -31,11 +32,6 @@ const HOW_TO_PLAY_ITEMS: HowToPlayItem[] = [
       'When your action requires a skill check, a dice roll is triggered automatically. Your modifiers are applied based on your character stats.',
   },
   {
-    title: 'Inviting Your Friends',
-    details:
-      'Share your session code with friends so they can join your campaign as party members.',
-  },
-  {
     title: 'Completing Quests',
     details:
       'Follow quest objectives shown in the left panel. Complete them to earn experience, gold, and items.',
@@ -57,261 +53,34 @@ const HOW_TO_PLAY_ITEMS: HowToPlayItem[] = [
   },
 ];
 
-const panelStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  overflowY: 'auto',
-  overflowX: 'hidden',
-  fontFamily: 'inherit',
-  color: '#e8e8f0',
-};
-
-const partyHeaderStyle: CSSProperties = {
-  textAlign: 'center',
-  padding: '14px 16px 12px',
-  borderBottom: '1px solid #2a2a3a',
-  position: 'relative',
-};
-
-const partyHeaderBorderTop: CSSProperties = {
-  position: 'absolute',
-  top: 0,
-  left: 16,
-  right: 16,
-  height: 1,
-  background: 'linear-gradient(90deg, transparent, #c9a84c 30%, #c9a84c 70%, transparent)',
-};
-
-const partyTitleStyle: CSSProperties = {
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: '0.14em',
-  color: '#c9a84c',
-  textTransform: 'uppercase',
-  userSelect: 'none',
-};
-
-const characterCardStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  padding: '20px 16px 16px',
-  borderBottom: '1px solid #2a2a3a',
-};
-
-const portraitContainerStyle: CSSProperties = {
-  position: 'relative',
-  marginBottom: 12,
-};
-
-const portraitStyle: CSSProperties = {
-  width: 100,
-  height: 100,
-  borderRadius: 12,
-  border: '2px solid #c9a84c',
-  backgroundColor: '#1a1a28',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  color: '#2a2a3a',
-  fontSize: 36,
-  userSelect: 'none',
-  boxShadow: '0 0 12px rgba(201, 168, 76, 0.15)',
-};
-
-const classBadgeStyle: CSSProperties = {
-  position: 'absolute',
-  top: -4,
-  right: -8,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 3,
-  backgroundColor: '#1e1e30',
-  border: '1px solid #c9a84c',
-  borderRadius: 6,
-  padding: '2px 7px',
-  fontSize: 10,
-  fontWeight: 600,
-  color: '#c9a84c',
-  letterSpacing: '0.04em',
-  whiteSpace: 'nowrap',
-  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.4)',
-};
-
-const statLineStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  fontSize: 13,
-  fontWeight: 600,
-  letterSpacing: '0.06em',
-  marginTop: 3,
-};
-
-const howToPlaySectionStyle: CSSProperties = {
-  flex: 1,
-  padding: '0 0 8px',
-  borderBottom: '1px solid #2a2a3a',
-  minHeight: 0,
-  overflowY: 'auto',
-};
-
-const howToPlayHeaderStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '12px 16px',
-  cursor: 'pointer',
-  userSelect: 'none',
-};
-
-const howToPlayTitleStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: '0.12em',
-  color: '#c9a84c',
-  textTransform: 'uppercase',
-};
-
-const chevronStyle = (expanded: boolean): CSSProperties => ({
-  fontSize: 10,
-  color: '#9898a8',
-  transition: 'transform 0.2s ease',
-  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-});
-
-const itemContainerStyle: CSSProperties = {
-  padding: '0 12px',
-};
-
-const itemHeaderStyle = (hovered: boolean): CSSProperties => ({
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 8,
-  padding: '8px 4px',
-  cursor: 'pointer',
-  borderBottom: '1px solid #1e1e2a',
-  backgroundColor: hovered ? '#1a1a28' : 'transparent',
-  borderRadius: 4,
-  transition: 'background-color 0.15s ease',
-});
-
-const itemNumberStyle: CSSProperties = {
-  fontSize: 11,
-  fontWeight: 700,
-  color: '#c9a84c',
-  minWidth: 16,
-  textAlign: 'right',
-  paddingTop: 1,
-  flexShrink: 0,
-};
-
-const itemTitleStyle: CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: '#e8e8f0',
-  lineHeight: 1.4,
-  flex: 1,
-};
-
-const itemChevronStyle = (expanded: boolean): CSSProperties => ({
-  fontSize: 9,
-  color: '#9898a8',
-  transition: 'transform 0.2s ease',
-  transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-  paddingTop: 3,
-  flexShrink: 0,
-});
-
-const itemDetailsStyle: CSSProperties = {
-  fontSize: 11,
-  color: '#9898a8',
-  lineHeight: 1.5,
-  padding: '4px 4px 10px 28px',
-};
-
-const quickActionsStyle: CSSProperties = {
-  padding: '12px 16px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 8,
-  flexShrink: 0,
-};
-
-const buttonBase: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 6,
-  width: '100%',
-  padding: '8px 12px',
-  border: '1px solid #2a2a3a',
-  borderRadius: 6,
-  fontSize: 12,
-  fontWeight: 600,
-  letterSpacing: '0.04em',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  transition: 'all 0.2s ease',
-};
-
 function RightPanel({ character, playerName = 'LUCAS', onSave }: RightPanelProps) {
   const [howToPlayOpen, setHowToPlayOpen] = useState(true);
   const [expandedItem, setExpandedItem] = useState<number | null>(null);
   const [hoveredItem, setHoveredItem] = useState<number | null>(null);
-  const [saveHovered, setSaveHovered] = useState(false);
-  const [newsHovered, setNewsHovered] = useState(false);
 
   const toggleItem = (index: number) => {
     setExpandedItem(expandedItem === index ? null : index);
   };
 
-  const saveButtonStyle: CSSProperties = {
-    ...buttonBase,
-    backgroundColor: saveHovered ? '#1e1e30' : 'transparent',
-    color: saveHovered ? '#e8e8f0' : '#9898a8',
-    borderColor: saveHovered ? '#9898a8' : '#2a2a3a',
-  };
-
-  const newsButtonStyle: CSSProperties = {
-    ...buttonBase,
-    backgroundColor: newsHovered ? '#2a2235' : '#1e1a28',
-    color: newsHovered ? '#e8e8f0' : '#c9a84c',
-    borderColor: newsHovered ? '#c9a84c' : '#2a2a3a',
-  };
-
-  const updateDotStyle: CSSProperties = {
-    width: 6,
-    height: 6,
-    borderRadius: '50%',
-    backgroundColor: '#e94560',
-    boxShadow: '0 0 6px rgba(233, 69, 96, 0.6)',
-    flexShrink: 0,
-  };
-
   return (
-    <div style={panelStyle}>
+    <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden text-text-primary">
       {/* Party Header */}
-      <div style={partyHeaderStyle}>
-        <div style={partyHeaderBorderTop} />
-        <span style={partyTitleStyle}>
+      <div className="text-center px-4 py-3.5 pb-3 border-b border-border-primary relative">
+        <div className="absolute top-0 left-4 right-4 h-px bg-[linear-gradient(90deg,transparent,var(--color-gold)_30%,var(--color-gold)_70%,transparent)]" />
+        <span className="text-xs font-bold tracking-[0.14em] text-gold uppercase select-none">
           {playerName.toUpperCase()}&apos;S PARTY
         </span>
       </div>
 
       {/* Character Quick Card */}
-      <div style={characterCardStyle}>
-        <div style={portraitContainerStyle}>
-          <div style={portraitStyle}>
+      <div className="flex flex-col items-center px-4 pt-5 pb-4 border-b border-border-primary">
+        <div className="relative mb-3">
+          <div className="w-[100px] h-[100px] rounded-lg border-2 border-gold bg-bg-card flex items-center justify-center text-border-primary text-4xl select-none shadow-gold">
             {character ? character.name.charAt(0).toUpperCase() : '?'}
           </div>
           {character && (
-            <div style={classBadgeStyle}>
-              <span style={{ fontSize: 10 }}>&#9733;</span>
+            <div className="absolute -top-1 -right-2 flex items-center gap-[3px] bg-[#1e1e30] border border-gold rounded-md px-[7px] py-0.5 text-[10px] font-semibold text-gold tracking-[0.04em] whitespace-nowrap shadow-md">
+              <Star size={10} />
               <span>{character.character_class}</span>
             </div>
           )}
@@ -319,55 +88,71 @@ function RightPanel({ character, playerName = 'LUCAS', onSave }: RightPanelProps
 
         {character ? (
           <>
-            <div style={statLineStyle}>
-              <span style={{ color: '#e94560' }}>PV</span>
-              <span style={{ color: '#e94560' }}>
+            <div className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.06em] mt-[3px]">
+              <span className="text-red">PV</span>
+              <span className="text-red">
                 {character.hp_current}/{character.hp_max}
               </span>
             </div>
-            <div style={statLineStyle}>
-              <span style={{ color: '#9898a8' }}>Ame</span>
-              <span style={{ color: '#9898a8' }}>
+            <div className="flex items-center gap-2 text-[13px] font-semibold tracking-[0.06em] mt-[3px]">
+              <span className="text-text-secondary">Ame</span>
+              <span className="text-text-secondary">
                 {character.mana_current}/{character.mana_max}
               </span>
             </div>
           </>
         ) : (
-          <div style={{ fontSize: 12, color: '#9898a8', marginTop: 4 }}>
+          <div className="text-xs text-text-secondary mt-1">
             Aucun personnage
           </div>
         )}
       </div>
 
       {/* How To Play Section */}
-      <div style={howToPlaySectionStyle}>
+      <div className="flex-1 pb-2 border-b border-border-primary min-h-0 overflow-y-auto">
         <div
-          style={howToPlayHeaderStyle}
+          className="flex items-center justify-between px-4 py-3 cursor-pointer select-none"
           onClick={() => setHowToPlayOpen(!howToPlayOpen)}
         >
-          <div style={howToPlayTitleStyle}>
-            <span style={{ fontSize: 13 }}>&#63;</span>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-[0.12em] text-gold uppercase">
+            <HelpCircle size={13} />
             <span>HOW TO PLAY</span>
           </div>
-          <span style={chevronStyle(howToPlayOpen)}>&#9660;</span>
+          <ChevronDown
+            size={12}
+            className={`text-text-secondary transition-transform duration-200 ${howToPlayOpen ? 'rotate-180' : 'rotate-0'}`}
+          />
         </div>
 
         {howToPlayOpen && (
-          <div style={itemContainerStyle}>
+          <div className="px-3">
             {HOW_TO_PLAY_ITEMS.map((item, index) => (
               <div key={index}>
                 <div
-                  style={itemHeaderStyle(hoveredItem === index)}
+                  className={`flex items-start gap-2 px-1 py-2 cursor-pointer border-b border-[#1e1e2a] rounded-sm transition-colors duration-150 ${
+                    hoveredItem === index ? 'bg-bg-card' : 'bg-transparent'
+                  }`}
                   onClick={() => toggleItem(index)}
                   onMouseEnter={() => setHoveredItem(index)}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
-                  <span style={itemNumberStyle}>{index + 1}.</span>
-                  <span style={itemTitleStyle}>{item.title}</span>
-                  <span style={itemChevronStyle(expandedItem === index)}>&#9654;</span>
+                  <span className="text-[11px] font-bold text-gold min-w-4 text-right pt-px shrink-0">
+                    {index + 1}.
+                  </span>
+                  <span className="text-xs font-semibold text-text-primary leading-[1.4] flex-1">
+                    {item.title}
+                  </span>
+                  <ChevronRight
+                    size={10}
+                    className={`text-text-secondary transition-transform duration-200 pt-[3px] shrink-0 ${
+                      expandedItem === index ? 'rotate-90' : 'rotate-0'
+                    }`}
+                  />
                 </div>
                 {expandedItem === index && (
-                  <div style={itemDetailsStyle}>{item.details}</div>
+                  <div className="text-[11px] text-text-secondary leading-[1.5] px-1 pt-1 pb-2.5 pl-7">
+                    {item.details}
+                  </div>
                 )}
               </div>
             ))}
@@ -376,22 +161,13 @@ function RightPanel({ character, playerName = 'LUCAS', onSave }: RightPanelProps
       </div>
 
       {/* Quick Actions */}
-      <div style={quickActionsStyle}>
+      <div className="p-4 flex flex-col gap-2 shrink-0">
         <button
-          style={saveButtonStyle}
+          className="flex items-center justify-center gap-1.5 w-full px-3 py-2 border border-border-primary rounded-md text-xs font-semibold tracking-[0.04em] cursor-pointer transition-all duration-200 bg-transparent text-text-secondary hover:bg-bg-input hover:text-text-primary hover:border-text-secondary"
           onClick={onSave}
-          onMouseEnter={() => setSaveHovered(true)}
-          onMouseLeave={() => setSaveHovered(false)}
         >
-          &#128190; Sauvegarder
-        </button>
-        <button
-          style={newsButtonStyle}
-          onMouseEnter={() => setNewsHovered(true)}
-          onMouseLeave={() => setNewsHovered(false)}
-        >
-          Nouveautes
-          <span style={updateDotStyle} />
+          <Save size={14} />
+          Sauvegarder
         </button>
       </div>
     </div>

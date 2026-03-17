@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { User } from 'lucide-react';
 import type { CharacterAttributes, SkillCategory as SkillCategoryType } from '../../types';
 import RadarChart from '../character/RadarChart';
 import SkillCategory from '../character/SkillCategory';
@@ -22,134 +22,6 @@ function xpForLevel(level: number): number {
   return level * 100;
 }
 
-const styles = {
-  wrapper: {
-    height: '100%',
-    overflowY: 'auto',
-    padding: '12px 10px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  } satisfies CSSProperties,
-
-  emptyState: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-    color: '#606070',
-    fontSize: 13,
-    fontStyle: 'italic',
-  } satisfies CSSProperties,
-
-  name: {
-    fontSize: 20,
-    fontWeight: 700,
-    color: '#c9a84c',
-    textAlign: 'center',
-    letterSpacing: '0.02em',
-    lineHeight: 1.2,
-  } satisfies CSSProperties,
-
-  portraitWrapper: {
-    display: 'flex',
-    justifyContent: 'center',
-  } satisfies CSSProperties,
-
-  portrait: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    backgroundColor: '#1a1a28',
-    border: '2px solid #8b7340',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#606070',
-    fontSize: 36,
-    userSelect: 'none',
-  } satisfies CSSProperties,
-
-  classBadgeRow: {
-    display: 'flex',
-    justifyContent: 'center',
-  } satisfies CSSProperties,
-
-  classBadge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '3px 12px',
-    borderRadius: 999,
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: '0.04em',
-    color: '#c9a84c',
-    backgroundColor: 'rgba(201, 168, 76, 0.12)',
-    border: '1px solid rgba(201, 168, 76, 0.25)',
-  } satisfies CSSProperties,
-
-  statsRow: {
-    display: 'flex',
-    gap: 8,
-  } satisfies CSSProperties,
-
-  statBlock: {
-    flex: 1,
-    minWidth: 0,
-  } satisfies CSSProperties,
-
-  statLabel: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-    marginBottom: 3,
-  } satisfies CSSProperties,
-
-  statLabelText: (color: string): CSSProperties => ({
-    fontSize: 9,
-    fontWeight: 700,
-    letterSpacing: '0.1em',
-    textTransform: 'uppercase',
-    color,
-  }),
-
-  statValue: {
-    fontSize: 9,
-    color: '#9898a8',
-    fontFamily: "'Cascadia Code', 'Fira Code', 'Consolas', monospace",
-  } satisfies CSSProperties,
-
-  statTrack: {
-    width: '100%',
-    height: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  } satisfies CSSProperties,
-
-  statFill: (percent: number, color: string): CSSProperties => ({
-    width: `${Math.min(100, Math.max(0, percent))}%`,
-    height: '100%',
-    backgroundColor: color,
-    borderRadius: 3,
-    transition: 'width 0.4s ease',
-    boxShadow: percent > 0 ? `0 0 4px ${color}50` : 'none',
-  }),
-
-  sectionDivider: {
-    height: 1,
-    backgroundColor: '#2a2a3a',
-    margin: '2px 0',
-  } satisfies CSSProperties,
-
-  skillsSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-  } satisfies CSSProperties,
-};
-
 function StatBar({
   label,
   current,
@@ -169,13 +41,20 @@ function StatBar({
     : `${current}/${max}`;
 
   return (
-    <div style={styles.statBlock}>
-      <div style={styles.statLabel}>
-        <span style={styles.statLabelText(color)}>{label}</span>
-        <span style={styles.statValue}>{displayValue}</span>
+    <div className="flex-1 min-w-0">
+      <div className="flex justify-between items-baseline mb-[3px]">
+        <span className="text-[9px] font-bold tracking-[0.1em] uppercase" style={{ color }}>{label}</span>
+        <span className="text-[9px] text-text-secondary font-mono">{displayValue}</span>
       </div>
-      <div style={styles.statTrack}>
-        <div style={styles.statFill(percent, color)} />
+      <div className="w-full h-[5px] bg-white/[0.06] rounded-[3px] overflow-hidden">
+        <div
+          className="h-full rounded-[3px] transition-[width] duration-400"
+          style={{
+            width: `${Math.min(100, Math.max(0, percent))}%`,
+            backgroundColor: color,
+            boxShadow: percent > 0 ? `0 0 4px ${color}50` : 'none',
+          }}
+        />
       </div>
     </div>
   );
@@ -184,7 +63,7 @@ function StatBar({
 function CharacterTab({ character, skillCategories }: CharacterTabProps) {
   if (!character) {
     return (
-      <div style={styles.emptyState}>
+      <div className="flex items-center justify-center h-full text-text-dim text-[13px] italic">
         Aucun personnage
       </div>
     );
@@ -193,20 +72,22 @@ function CharacterTab({ character, skillCategories }: CharacterTabProps) {
   const xpMax = xpForLevel(character.level);
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.name}>{character.name}</div>
+    <div className="h-full overflow-y-auto px-2.5 py-3 flex flex-col gap-3">
+      <div className="text-xl font-bold text-gold text-center tracking-[0.02em] leading-tight">{character.name}</div>
 
-      <div style={styles.portraitWrapper}>
-        <div style={styles.portrait}>
-          <span>{'\u{1F9D9}'}</span>
+      <div className="flex justify-center">
+        <div className="w-[120px] h-[120px] rounded-xl bg-bg-card border-2 border-border-gold flex items-center justify-center text-text-dim text-4xl select-none">
+          <User size={48} className="text-text-dim" />
         </div>
       </div>
 
-      <div style={styles.classBadgeRow}>
-        <span style={styles.classBadge}>{character.character_class}</span>
+      <div className="flex justify-center">
+        <span className="inline-flex items-center justify-center px-3 py-[3px] rounded-full text-[11px] font-semibold tracking-[0.04em] text-gold bg-gold/12 border border-gold/25">
+          {character.character_class}
+        </span>
       </div>
 
-      <div style={styles.statsRow}>
+      <div className="flex gap-2">
         <StatBar
           label="HP"
           current={character.hp_current}
@@ -230,9 +111,9 @@ function CharacterTab({ character, skillCategories }: CharacterTabProps) {
 
       <RadarChart attributes={character.attributes} />
 
-      <div style={styles.sectionDivider} />
+      <div className="h-px bg-border-primary my-0.5" />
 
-      <div style={styles.skillsSection}>
+      <div className="flex flex-col">
         {skillCategories.map(cat => (
           <SkillCategory
             key={cat.name}

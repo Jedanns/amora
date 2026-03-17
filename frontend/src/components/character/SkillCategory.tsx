@@ -1,4 +1,5 @@
-import type { CSSProperties } from 'react';
+import type { ComponentType } from 'react';
+import { Sparkles, Sword, Lock, MessageCircle, Shield, Wand2 } from 'lucide-react';
 
 interface SkillCategoryProps {
   name: string;
@@ -12,119 +13,13 @@ interface SkillCategoryProps {
   }>;
 }
 
-const ICON_MAP: Record<string, string> = {
-  sparkles: '\u2728',
-  swords: '\u2694',
-  lock: '\u{1F512}',
-  chat: '\u{1F4AC}',
-  shield: '\u{1F6E1}',
-  magic: '\u{1FA84}',
-};
-
-const styles = {
-  container: {
-    marginBottom: 8,
-  } satisfies CSSProperties,
-
-  header: (color: string): CSSProperties => ({
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '6px 10px',
-    backgroundColor: '#111118',
-    borderLeft: `4px solid ${color}`,
-    borderRadius: '0 4px 4px 0',
-  }),
-
-  headerIcon: {
-    fontSize: 14,
-    lineHeight: 1,
-    flexShrink: 0,
-  } satisfies CSSProperties,
-
-  headerName: {
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: '0.08em',
-    color: '#e8e8f0',
-    textTransform: 'uppercase' as const,
-  } satisfies CSSProperties,
-
-  skillList: {
-    padding: '4px 0',
-  } satisfies CSSProperties,
-
-  skillRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '4px 10px',
-    minHeight: 28,
-  } satisfies CSSProperties,
-
-  modifierBase: (modifier: number): CSSProperties => {
-    const isPositive = modifier >= 0;
-    const isExceptional = modifier >= 5 || modifier <= -3;
-    const color = isPositive ? '#53d769' : '#e94560';
-
-    return {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minWidth: 32,
-      fontSize: 12,
-      fontWeight: 700,
-      fontFamily: "'Cascadia Code', 'Fira Code', 'Consolas', monospace",
-      color,
-      border: isExceptional ? '1px solid #c9a84c' : '1px solid transparent',
-      borderRadius: 3,
-      padding: '1px 4px',
-      backgroundColor: isExceptional ? 'rgba(201, 168, 76, 0.1)' : 'transparent',
-      flexShrink: 0,
-    };
-  },
-
-  skillName: {
-    fontSize: 12,
-    color: '#e8e8f0',
-    whiteSpace: 'nowrap' as const,
-    overflow: 'hidden' as const,
-    textOverflow: 'ellipsis' as const,
-    minWidth: 0,
-    flex: 1,
-  } satisfies CSSProperties,
-
-  xpSection: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'flex-end',
-    gap: 2,
-    flexShrink: 0,
-    minWidth: 60,
-  } satisfies CSSProperties,
-
-  xpText: {
-    fontSize: 9,
-    color: '#606070',
-    fontFamily: "'Cascadia Code', 'Fira Code', 'Consolas', monospace",
-    letterSpacing: '0.02em',
-  } satisfies CSSProperties,
-
-  xpTrack: {
-    width: 60,
-    height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 2,
-    overflow: 'hidden' as const,
-  } satisfies CSSProperties,
-
-  xpFill: (percent: number): CSSProperties => ({
-    width: `${Math.min(100, Math.max(0, percent))}%`,
-    height: '100%',
-    backgroundColor: '#53d769',
-    borderRadius: 2,
-    transition: 'width 0.3s ease',
-  }),
+const ICON_MAP: Record<string, ComponentType<{ size?: number; className?: string }>> = {
+  sparkles: Sparkles,
+  swords: Sword,
+  lock: Lock,
+  chat: MessageCircle,
+  shield: Shield,
+  magic: Wand2,
 };
 
 function formatModifier(value: number): string {
@@ -132,33 +27,50 @@ function formatModifier(value: number): string {
 }
 
 function SkillCategory({ name, icon, color, skills }: SkillCategoryProps) {
-  const iconChar = ICON_MAP[icon] ?? icon;
+  const Icon = ICON_MAP[icon];
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header(color)}>
-        <span style={styles.headerIcon}>{iconChar}</span>
-        <span style={styles.headerName}>{name}</span>
+    <div className="mb-2">
+      <div
+        className="flex items-center gap-2 px-2.5 py-1.5 bg-bg-secondary rounded-r-sm border-l-4"
+        style={{ borderLeftColor: color }}
+      >
+        {Icon && <span className="shrink-0" style={{ color }}><Icon size={14} /></span>}
+        <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-text-primary">{name}</span>
       </div>
 
-      <div style={styles.skillList}>
+      <div className="py-1">
         {skills.map(skill => {
           const xpPercent = skill.max_xp > 0
             ? (skill.current_xp / skill.max_xp) * 100
             : 0;
+          const isPositive = skill.modifier >= 0;
+          const isExceptional = skill.modifier >= 5 || skill.modifier <= -3;
 
           return (
-            <div key={skill.name} style={styles.skillRow}>
-              <span style={styles.modifierBase(skill.modifier)}>
+            <div key={skill.name} className="flex items-center gap-2 px-2.5 py-1 min-h-[28px]">
+              <span
+                className={`inline-flex items-center justify-center min-w-[32px] text-xs font-bold font-mono rounded-[3px] px-1 py-px shrink-0 ${
+                  isExceptional
+                    ? 'border border-gold bg-gold/10'
+                    : 'border border-transparent'
+                }`}
+                style={{ color: isPositive ? '#53d769' : '#e94560' }}
+              >
                 {formatModifier(skill.modifier)}
               </span>
-              <span style={styles.skillName}>{skill.name}</span>
-              <div style={styles.xpSection}>
-                <span style={styles.xpText}>
+              <span className="text-xs text-text-primary whitespace-nowrap overflow-hidden text-ellipsis min-w-0 flex-1">
+                {skill.name}
+              </span>
+              <div className="flex flex-col items-end gap-0.5 shrink-0 min-w-[60px]">
+                <span className="text-[9px] text-text-dim font-mono tracking-[0.02em]">
                   {skill.current_xp}/{skill.max_xp}
                 </span>
-                <div style={styles.xpTrack}>
-                  <div style={styles.xpFill(xpPercent)} />
+                <div className="w-[60px] h-[3px] bg-white/[0.06] rounded-sm overflow-hidden">
+                  <div
+                    className="h-full bg-green rounded-sm transition-[width] duration-300"
+                    style={{ width: `${Math.min(100, Math.max(0, xpPercent))}%` }}
+                  />
                 </div>
               </div>
             </div>

@@ -120,6 +120,15 @@ class Database:
         ]
 
     async def delete_session(self, session_id: str) -> bool:
+        await self.conn.execute(
+            "DELETE FROM game_states WHERE session_id = ?", (session_id,)
+        )
+        await self.conn.execute(
+            "DELETE FROM dice_rolls WHERE session_id = ?", (session_id,)
+        )
+        await self.conn.execute(
+            "DELETE FROM characters WHERE session_id = ?", (session_id,)
+        )
         cursor = await self.conn.execute(
             "DELETE FROM sessions WHERE id = ?", (session_id,)
         )

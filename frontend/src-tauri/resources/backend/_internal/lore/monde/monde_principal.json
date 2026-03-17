@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "name": "Regles fondamentales",
+      "category": "constant",
+      "keys": [],
+      "content": "Ce monde est un univers de fantasy medievale. La magie existe mais est rare et couteuse. Les dieux sont reels mais distants. La technologie est pre-industrielle. Les monstres rodent dans les zones sauvages.",
+      "priority": 1000,
+      "order": 1,
+      "trigger_chance": 100,
+      "enabled": true
+    },
+    {
+      "name": "Systeme monetaire",
+      "category": "constant",
+      "keys": [],
+      "content": "La monnaie du royaume: 1 piece d'or = 10 pieces d'argent = 100 pieces de cuivre. Un repas coute 5 cuivres, une nuit a l'auberge 2 argents, une epee de base 15 or.",
+      "priority": 1000,
+      "order": 2,
+      "trigger_chance": 100,
+      "enabled": true
+    }
+  ]
+}

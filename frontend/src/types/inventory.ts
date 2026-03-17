@@ -33,6 +33,9 @@ export interface EquipmentSlots {
 export interface Inventory {
   items: Item[];
   equipment: EquipmentSlots;
+  weapons: Item[];
+  armors: Item[];
+  consumables: Item[];
   crowns: number;
   armor_class: number;
   total_damage: string;

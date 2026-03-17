@@ -1,0 +1,24 @@
+{
+  "entries": [
+    {
+      "name": "Regles de combat",
+      "category": "constant",
+      "keys": [],
+      "content": "Combat: jet d'attaque d20 + modificateur de force/dexterite vs classe d'armure. Reussite critique sur 20 naturel (degats doubles). Echec critique sur 1 naturel (consequence negative). Initiative: d20 + modificateur de dexterite. Le plus haut agit en premier.",
+      "priority": 1000,
+      "order": 3,
+      "trigger_chance": 100,
+      "enabled": true
+    },
+    {
+      "name": "Regles de sauvegarde",
+      "category": "constant",
+      "keys": [],
+      "content": "Jets de sauvegarde: d20 + modificateur d'attribut vs difficulte. Types: Force (resister poussee), Dexterite (esquiver), Constitution (resister poison), Intelligence (illusions), Sagesse (charme), Charisme (possession).",
+      "priority": 1000,
+      "order": 4,
+      "trigger_chance": 100,
+      "enabled": true
+    }
+  ]
+}

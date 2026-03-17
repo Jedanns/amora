@@ -7,6 +7,7 @@ from src.api.deps import get_app_state
 from src.api.schemas.requests import (
     CreateSessionRequest,
     ProcessInputRequest,
+    QuestUpdateRequest,
     RollDiceRequest,
 )
 from src.api.schemas.responses import (
@@ -16,12 +17,16 @@ from src.api.schemas.responses import (
     HistoryEntryResponse,
     HistoryResponse,
     NarrativeResponse,
+    ObjectiveResponse,
+    QuestListResponse,
+    QuestResponse,
     SessionResponse,
 )
 from src.core.exceptions import SessionError
 from src.llm.gateway import GenerationParams
 from src.llm.parser import ResponseParser
 from src.memory.context import ContextInput
+from src.quest.models import Quest, Objective, QuestStatus, QuestType, ObjectiveType
 
 logger = logging.getLogger(__name__)
 
@@ -260,6 +265,191 @@ async def get_history(session_id: str, limit: int = 50) -> HistoryResponse:
     )
 
 
+@router.get("/sessions", response_model=list[SessionResponse])
+async def list_sessions() -> list[SessionResponse]:
+    app = get_app_state()
+    assert app.engine is not None
+    rows = await app.engine._db.list_sessions()
+    results: list[SessionResponse] = []
+    for row in rows:
+        data = await app.engine._db.load_session(row["id"])
+        state_data = data.get("state", {}) if data else {}
+        char_list = data.get("characters", []) if data else []
+        char_name = char_list[0].get("name") if char_list else None
+        char_class = char_list[0].get("character_class") if char_list else None
+        results.append(
+            SessionResponse(
+                session_id=row["id"],
+                name=row.get("name", row["id"]),
+                turn=state_data.get("turn", 0),
+                location=state_data.get("location", "spawn"),
+                combat_active=state_data.get("combat_active", False),
+                active_character_id=state_data.get("active_character_id"),
+                version=state_data.get("version", 0),
+                character_name=char_name,
+                character_class=char_class,
+                created_at=row.get("created_at"),
+                updated_at=row.get("updated_at"),
+            )
+        )
+    return results
+
+
+@router.delete("/session/{session_id}", status_code=204)
+async def delete_session(session_id: str) -> None:
+    app = get_app_state()
+    assert app.engine is not None
+    deleted = await app.engine._db.delete_session(session_id)
+    if not deleted:
+        raise SessionError(f"Session not found: {session_id}")
+
+
+@router.post("/session/{session_id}/set-character")
+async def set_active_character(session_id: str, character_id: str) -> GameStateResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+    engine.state.active_character_id = character_id
+    return _state_to_response(engine.state)
+
+
+def _quest_to_response(quest: Quest) -> QuestResponse:
+    return QuestResponse(
+        id=quest.id,
+        name=quest.name,
+        description=quest.description,
+        status=quest.status.value,
+        objectives=[
+            ObjectiveResponse(
+                id=o.id,
+                description=o.description,
+                current=o.current,
+                target=o.required,
+                completed=o.is_complete,
+            )
+            for o in quest.objectives
+        ],
+        progress=quest.progress_pct,
+    )
+
+
+@router.get(
+    "/session/{session_id}/quests", response_model=QuestListResponse
+)
+async def list_quests(session_id: str, status: str | None = None) -> QuestListResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+
+    if status == "active":
+        quests = engine.quests.list_active()
+    elif status == "available":
+        quests = engine.quests.list_available()
+    elif status == "completed":
+        quests = engine.quests.list_completed()
+    else:
+        quests = list(engine.quests._quests.values())
+
+    return QuestListResponse(
+        quests=[_quest_to_response(q) for q in quests],
+        total=len(quests),
+    )
+
+
+@router.post(
+    "/session/{session_id}/quests",
+    response_model=QuestResponse,
+    status_code=201,
+)
+async def add_quest(session_id: str, quest_data: dict[str, Any]) -> QuestResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+
+    quest = Quest.model_validate(quest_data)
+    engine.quests.add(quest)
+    return _quest_to_response(quest)
+
+
+@router.post(
+    "/session/{session_id}/quests/{quest_id}/start",
+    response_model=QuestResponse,
+)
+async def start_quest(session_id: str, quest_id: str) -> QuestResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+    quest = engine.quests.start(quest_id)
+    return _quest_to_response(quest)
+
+
+@router.post(
+    "/session/{session_id}/quests/{quest_id}/advance",
+    response_model=QuestResponse,
+)
+async def advance_quest_objective(
+    session_id: str, quest_id: str, request: QuestUpdateRequest
+) -> QuestResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+    engine.quests.advance_objective(quest_id, request.objective_id, request.amount)
+    quest = engine.quests.get(quest_id)
+    return _quest_to_response(quest)
+
+
+@router.post(
+    "/session/{session_id}/quests/{quest_id}/complete",
+    response_model=QuestResponse,
+)
+async def complete_quest(session_id: str, quest_id: str) -> QuestResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+    quest = engine.quests.complete(quest_id)
+    return _quest_to_response(quest)
+
+
+@router.post(
+    "/session/{session_id}/quests/{quest_id}/fail",
+    response_model=QuestResponse,
+)
+async def fail_quest(session_id: str, quest_id: str) -> QuestResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+    quest = engine.quests.fail(quest_id)
+    return _quest_to_response(quest)
+
+
+@router.post(
+    "/session/{session_id}/quests/{quest_id}/abandon",
+    response_model=QuestResponse,
+)
+async def abandon_quest(session_id: str, quest_id: str) -> QuestResponse:
+    app = get_app_state()
+    assert app.engine is not None
+    engine = app.engine
+    if engine._state is None or engine._state.session_id != session_id:
+        await engine.load_session(session_id)
+    quest = engine.quests.abandon(quest_id)
+    return _quest_to_response(quest)
+
+
 @router.websocket("/session/{session_id}/stream")
 async def stream_game(websocket: WebSocket, session_id: str) -> None:
     await websocket.accept()
@@ -322,12 +512,50 @@ async def stream_game(websocket: WebSocket, session_id: str) -> None:
             )
 
             full_response = ""
+            in_think_block = False
+            pending_buffer = ""
             stream = await app.llm_gateway.generate_stream(
                 context_result.prompt, params
             )
             async for chunk in stream:
                 full_response += chunk
-                await websocket.send_json({"type": "chunk", "text": chunk})
+                pending_buffer += chunk
+
+                while pending_buffer:
+                    if in_think_block:
+                        end_idx = pending_buffer.find("</think>")
+                        if end_idx != -1:
+                            pending_buffer = pending_buffer[end_idx + 8:]
+                            in_think_block = False
+                        else:
+                            pending_buffer = ""
+                            break
+                    else:
+                        start_idx = pending_buffer.find("<think>")
+                        if start_idx != -1:
+                            to_send = pending_buffer[:start_idx]
+                            if to_send:
+                                await websocket.send_json({"type": "chunk", "text": to_send})
+                            pending_buffer = pending_buffer[start_idx + 7:]
+                            in_think_block = True
+                        elif "<" in pending_buffer and not pending_buffer.endswith(">"):
+                            last_lt = pending_buffer.rfind("<")
+                            maybe_tag = pending_buffer[last_lt:]
+                            if "<think>".startswith(maybe_tag):
+                                to_send = pending_buffer[:last_lt]
+                                if to_send:
+                                    await websocket.send_json({"type": "chunk", "text": to_send})
+                                pending_buffer = maybe_tag
+                                break
+                            else:
+                                await websocket.send_json({"type": "chunk", "text": pending_buffer})
+                                pending_buffer = ""
+                        else:
+                            await websocket.send_json({"type": "chunk", "text": pending_buffer})
+                            pending_buffer = ""
+
+            if pending_buffer and not in_think_block:
+                await websocket.send_json({"type": "chunk", "text": pending_buffer})
 
             parser = ResponseParser()
             parsed = parser.parse(full_response)
